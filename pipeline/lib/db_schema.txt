@@ -1,0 +1,78 @@
+ID                 : Unique database ID (self-incrementing integer)
+BeamID             : GBNCC beam number (XXXX from GBNCCXXXX)
+RightAscension     : Right ascension (deg)
+Declination        : Declination (deg)
+GalacticLon        : Galactic longitude (deg)
+GalacticLat        : Galactic latitude (deg)
+DateObserved       : Date of observation (MJD)
+CenterFreq         : Center observing frequency (MHz)
+BW                 : Observing bandwidth (MHz)
+SamplingTime       : Sampling time (us)
+IntTime            : Integratoin time (seconds)
+FileName           : Raw date file name (guppi_GBNCCXXXX_XXXXX_XXXX_0001.fits)
+FilePath           : Relative path to file on lustre
+ArchiveLocation    : Location of archive data (for future use)
+FileSize           : Raw data file size (kB)
+ProcessingStatus   : (u)nprocessed, (d)ownloading, (p)rocessing, (s)uccessful, 
+                     (w)arning, (f)ailed
+ProcessingAttempts : Number of processing attempts (for use with failed jobs)
+ProcessingSite     : Name of processing site
+ProcessingID       : Job ID on processing machine
+ProcessingDate     : Date data were processed (YYYY-MM-DDThh:mm:ss)
+PipelineVersion    : git hash or other identifier
+UploadDate         : Date data were uploaded to lustre (YYYY-MM-DDThh:mm:ss)
+
+CREATE TABLE GBNCC(
+    ID INT NOT NULL AUTO_INCREMENT COMMENT "Database ID",
+    BeamID INT NOT NULL COMMENT "GBNCC beam number",
+    RightAscension FLOAT NOT NULL COMMENT "Right ascension (deg)",
+    Declination FLOAT NOT NULL COMMENT "Declination (deg)",
+    GalacticLon FLOAT NOT NULL COMMENT "Galactic longitude (deg)",
+    GalacticLat FLOAT NOT NULL COMMENT "Galactic latitude (deg)",
+    DateObserved FLOAT NOT NULL COMMENT "Date of observation (MJD)",
+    CenterFreq FLOAT NOT NULL COMMENT "Center observing frequency (MHz)",
+    BW FLOAT NOT NULL COMMENT "Observing bandwidth (MHz)",
+    SamplingTime FLOAT NOT NULL COMMENT "Sampling time (us)",
+    IntTime FLOAT NOT NULL COMMENT "Integration time (s)",
+    FileName CHAR(36) NOT NULL COMMENT "Raw data file name",
+    FilePath VARCHAR(255) NOT NULL COMMENT "Relative path to raw data file",
+    ArchiveLocation VARCHAR(255) COMMENT "Location of offline archived raw data file",
+    FileSize BIGINT NOT NULL COMMENT "Raw data file size (bytes)",
+    ProcessingStatus CHAR(1) NOT NULL DEFAULT "u" COMMENT "Processing status (u=unprocessed, d=downloading, p=rocessing, s=successful, f=failed)",
+    ProcessingAttempts TINYINT NOT NULL DEFAULT 0 COMMENT "Number of processing attempts",
+    ProcessingSite VARCHAR(20) COMMENT "Processing site",
+    ProcessingID   INT COMMENT "Processing job ID",
+    ProcessingDate DATETIME COMMENT "Date of most recent processing",
+    PipelineVersion VARCHAR(255) COMMENT "Pipeline version identifier",
+    UploadDate DATETIME NOT NULL COMMENT "Date of upload to database",
+    PRIMARY KEY (ID)
+);
+DESCRIBE GBNCC;
+
+
++--------------------+--------------+------+-----+---------+----------------+
+| Field              | Type         | Null | Key | Default | Extra          |
++--------------------+--------------+------+-----+---------+----------------+
+| ID                 | int(11)      | NO   | PRI | NULL    | auto_increment |
+| BeamID             | int(11)      | NO   |     | NULL    |                |
+| RightAscension     | float        | NO   |     | NULL    |                |
+| Declination        | float        | NO   |     | NULL    |                |
+| GalacticLon        | float        | NO   |     | NULL    |                |
+| GalacticLat        | float        | NO   |     | NULL    |                |
+| DateObserved       | float        | NO   |     | NULL    |                |
+| CenterFreq         | float        | NO   |     | NULL    |                |
+| BW                 | float        | NO   |     | NULL    |                |
+| SamplingTime       | float        | NO   |     | NULL    |                |
+| IntTime            | float        | NO   |     | NULL    |                |
+| FileName           | char(36)     | NO   |     | NULL    |                |
+| FilePath           | varchar(255) | NO   |     | NULL    |                |
+| ArchiveLocation    | varchar(255) | YES  |     | NULL    |                |
+| FileSize           | bigint(20)   | NO   |     | NULL    |                |
+| ProcessingStatus   | char(1)      | NO   |     | u       |                |
+| ProcessingAttempts | tinyint(4)   | NO   |     | 0       |                |
+| ProcessingSite     | varchar(20)  | YES  |     | NULL    |                |
+| ProcessingID       | int(11)      | YES  |     | NULL    |                |
+| ProcessingDate     | datetime     | YES  |     | NULL    |                |
+| PipelineVersion    | varchar(255) | YES  |     | NULL    |                |
+| UploadDate         | datetime     | NO   |     | NULL    |                |
++--------------------+--------------+------+-----+---------+----------------+
