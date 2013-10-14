@@ -29,12 +29,12 @@ CREATE TABLE GBNCC(
     Declination FLOAT NOT NULL COMMENT "Declination (deg)",
     GalacticLon FLOAT NOT NULL COMMENT "Galactic longitude (deg)",
     GalacticLat FLOAT NOT NULL COMMENT "Galactic latitude (deg)",
-    DateObserved FLOAT NOT NULL COMMENT "Date of observation (MJD)",
+    DateObserved DOUBLE NOT NULL COMMENT "Date of observation (MJD)",
     CenterFreq FLOAT NOT NULL COMMENT "Center observing frequency (MHz)",
     BW FLOAT NOT NULL COMMENT "Observing bandwidth (MHz)",
     SamplingTime FLOAT NOT NULL COMMENT "Sampling time (us)",
     IntTime FLOAT NOT NULL COMMENT "Integration time (s)",
-    FileName CHAR(36) NOT NULL COMMENT "Raw data file name",
+    FileName CHAR(37) NOT NULL COMMENT "Raw data file name",
     FilePath VARCHAR(255) NOT NULL COMMENT "Relative path to raw data file",
     ArchiveLocation VARCHAR(255) COMMENT "Location of offline archived raw data file",
     FileSize BIGINT NOT NULL COMMENT "Raw data file size (bytes)",
@@ -59,12 +59,12 @@ DESCRIBE GBNCC;
 | Declination        | float        | NO   |     | NULL    |                |
 | GalacticLon        | float        | NO   |     | NULL    |                |
 | GalacticLat        | float        | NO   |     | NULL    |                |
-| DateObserved       | float        | NO   |     | NULL    |                |
+| DateObserved       | double       | NO   |     | NULL    |                |
 | CenterFreq         | float        | NO   |     | NULL    |                |
 | BW                 | float        | NO   |     | NULL    |                |
 | SamplingTime       | float        | NO   |     | NULL    |                |
 | IntTime            | float        | NO   |     | NULL    |                |
-| FileName           | char(36)     | NO   |     | NULL    |                |
+| FileName           | char(37)     | NO   |     | NULL    |                |
 | FilePath           | varchar(255) | NO   |     | NULL    |                |
 | ArchiveLocation    | varchar(255) | YES  |     | NULL    |                |
 | FileSize           | bigint(20)   | NO   |     | NULL    |                |
