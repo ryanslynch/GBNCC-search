@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import os, sys, pyfits, datetime
 import database
 from psr_utils import ra_to_rad, dec_to_rad, RADTODEG, DEGTORAD, SECPERDAY

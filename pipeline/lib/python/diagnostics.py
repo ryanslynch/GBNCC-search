@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#!/usr/bin/env python
 
 # Import necessary packages
 import sys, glob

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import time, msub, utils, config
 import database as DB
 
