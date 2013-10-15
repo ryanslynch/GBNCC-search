@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import os, glob, time, datetime, pytz, config, utils
 import database as DB
 
