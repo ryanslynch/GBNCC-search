@@ -1,5 +1,6 @@
-#!/usr/bin/python
-import os, sys, subprocess, atexit
+#!/usr/bin/env python
+from __future__ import print_function
+import os, sys, subprocess, time, handle_exit
 import database, config
 
 def download(outdir):
@@ -7,25 +8,30 @@ def download(outdir):
      query  = "SELECT ID,FilePath,FileName FROM GBNCC WHERE ProcessingStatus='u' OR (ProcessingStatus='f' AND ProcessingAttempts < 3)"
      db.execute(query)
      ret     = db.cursor.fetchone()
-     ID      = ret[0]
-     filenm  = os.path.join(*ret[1:])
-     cmd     = "rsync -aux pulsar.physics.mcgill.ca:%s %s"%(filenm,outdir)
-
-     query   = "UPDATE GBNCC SET ProcessingStatus='d',ProcessingSite='%s' "\
-               "WHERE ID=%i"%(config.machine,ID)
-     db.execute(query)
-     db.commit()
-     retcode = subprocess.call(cmd, shell=True)
-     if retcode == 0:
-         query = "UPDATE GBNCC SET ProcessingStatus='q' WHERE ID=%i"%ID
-         db.execute(query)
-         db.commit()
-         print("Successfully downloaded %s"%filenm)
+     if ret is not None:
+          ID      = ret[0]
+          filenm  = os.path.join(*ret[1:])
+          cmd     = "rsync -aux pulsar.physics.mcgill.ca:%s %s"%(filenm,outdir)
+          
+          query   = "UPDATE GBNCC SET ProcessingStatus='d',"\
+                    "ProcessingSite='%s' WHERE ID=%i"%(config.machine,ID)
+          db.execute(query)
+          db.commit()
+          retcode = subprocess.call(cmd, shell=True)
+          if retcode == 0:
+               query = "UPDATE GBNCC SET ProcessingStatus='q' WHERE ID=%i"%ID
+               db.execute(query)
+               db.commit()
+               print("Successfully downloaded %s"%filenm)
+          else:
+               query = "UPDATE GBNCC SET ProcessingStatus='u' WHERE ID=%i"%ID
+               db.execute(query)
+               db.commit()
+               print("ERROR: Failed to download %s"%filenm)
+     
      else:
-         query = "UPDATE GBNCC SET ProcessingStatus='u' WHERE ID=%i"%ID
-         db.execute(query)
-         db.commit()
-         print("ERROR: Failed to download %s"%filenm)
+          print("No files to download. Sleeping...", end="\r")
+          time.sleep(30*60)
      
      db.close()
     
@@ -48,7 +54,6 @@ def main():
     while True:
         download(outdir)
     
-
 if __name__ == "__main__":
-    with atexit.handle_exit(cleanup):
+    with handle_exit.handle_exit(cleanup):
         main()
