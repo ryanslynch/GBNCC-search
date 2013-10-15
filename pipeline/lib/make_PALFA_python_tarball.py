@@ -21,12 +21,11 @@ site_packages_contents = [ os.path.join(config.pipelinedir,'lib/python/'),
 # dirs to copy to the tarball site packages dir
 # no trailing slash because copytree is silly
 site_packages_folder = ['/sb/project/bgf-180-aa/python_tarballs/for_tarball/ubc_AI',
-                        '/sb/project/bgf-180-aa/lib/python2.6/site-packages/pyfits',
-                        '/sb/project/bgf-180-aa/python_tarballs/for_tarball/ratings2' ]
+                        '/sb/project/bgf-180-aa/lib/python2.6/site-packages/pyfits', ]
 
 # filenames of input (base) and output tarballs
-base_tarball = "/sb/project/bgf-180-aa/python_tarballs/python-2.6.8-packages-base.tar.gz"
-new_tarball = "/sb/project/bgf-180-aa/python_tarballs/python-2.6.8-packages-GBNCC.tar.gz"
+base_tarball = os.path.join(config.pipelinedir, "lib/python/python-2.6.8-packages-base.tar.gz")
+new_tarball = os.path.join(config.pipelinedir, "lib/python-2.6.8-packages-GBNCC.tar.gz")
 
 def make_tarball():
     # extract base python tarball
