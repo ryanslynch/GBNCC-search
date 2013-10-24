@@ -64,7 +64,7 @@ if [ {nodenm} == 1 ]
     tar -C {workdir} -xzf {pipelinedir}/lib/python-2.6.8-packages-GBNCC.tar.gz
 fi
 cd {workdir}
-python-2.6.8/bin/search.py {basenm}.fits {workdir} {hashnm}
+python-2.6.8/bin/search.py -w {workdir} -i {hashnm} {basenm}.fits 
 #rm -rf {workdir}
 """,
 
