@@ -11,20 +11,21 @@ bins = [ os.path.join(config.pipelinedir,'bin/search.py'),
          os.path.join(presto_dir,'bin/single_pulse_search.py') ]
 
 # individual files to put in tarball site packages dir
-site_packages_file = ['/sb/project/bgf-180-aa/lib/python2.6/site-packages/memory.py',
-                      '/sb/project/bgf-180-aa/lib/python2.6/site-packages/argparse.py']
+site_packages_file = [os.path.join(config.pipelinedir, "lib/for_tarball/mpfit.py")]
 
 # dirs from which to copy the contents of into tarball site packages dir
 site_packages_contents = [ os.path.join(config.pipelinedir,'lib/python/'),
-                           os.path.join(presto_dir,'lib/python/') ]
+                           os.path.join(presto_dir,'lib/python/'),]
 
 # dirs to copy to the tarball site packages dir
 # no trailing slash because copytree is silly
-site_packages_folder = ['/sb/project/bgf-180-aa/python_tarballs/for_tarball/ubc_AI',
+site_packages_folder = [os.path.join(config.pipelinedir, "lib/for_tarball/ubc_AI"),
+                        os.path.join(config.pipelinedir, "lib/for_tarball/mpfit"),
+                         os.path.join(config.pipelinedir, "lib/for_tarball/pyslalib"),
                         '/sb/project/bgf-180-aa/lib/python2.6/site-packages/pyfits', ]
 
 # filenames of input (base) and output tarballs
-base_tarball = os.path.join(config.pipelinedir, "lib/python/python-2.6.8-packages-base.tar.gz")
+base_tarball = os.path.join(config.pipelinedir, "lib/python-2.6.8-packages-base.tar.gz")
 new_tarball = os.path.join(config.pipelinedir, "lib/python-2.6.8-packages-GBNCC.tar.gz")
 
 def make_tarball():

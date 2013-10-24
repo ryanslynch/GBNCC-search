@@ -12,11 +12,11 @@ from xml.dom.minidom import parseString
 _submission_script = "msub"
 _debug = True
 
-def submit_job(filename):
+def submit_job(filename, options=""):
     '''Either you get a job id, and your job will run, or you don't
     and your job won't run, so you check out and err to see why.'''
     global _submission_script
-    process = Popen(_submission_script+" "+filename, shell=True,
+    process = Popen(_submission_script+" "+options+" "+filename, shell=True,
                     stdout=PIPE, stderr=PIPE)
     returncode = process.returncode
     (out,err) = process.communicate()
