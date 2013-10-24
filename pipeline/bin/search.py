@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
-import numpy, pyfits, presto, sifting, psr_utils
+import argparse, numpy, pyfits, presto, sifting, psr_utils
 import ratings, diagnostics, config#, analyse_sp
 
 checkpointdir = config.jobsdir
@@ -273,7 +273,7 @@ def remove_crosslist_duplicate_candidates(candlist1,candlist2):
     return candlist1,candlist2
 
 
-def main(fits_filenm, workdir, jobid, ddplans):
+def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     # Change to the specified working directory
     os.chdir(workdir)
 
@@ -288,8 +288,10 @@ def main(fits_filenm, workdir, jobid, ddplans):
     else:
       ddplans = ddplans[str(job.nchans)+"fast"]
     
-    # Use whatever .zaplist is found in the current directory
-    default_zaplist = glob.glob("*.zaplist")[0]
+    # Use the specified zaplist if provided.  Otherwise use whatever is in
+    # this directory
+    if zaplist is None:
+        zaplist = glob.glob("*.zaplist")[0]
     
     # Creat a checkpoint file
     if jobid is not None:
@@ -333,12 +335,16 @@ def main(fits_filenm, workdir, jobid, ddplans):
     
     # Iterate over the stages of the overall de-dispersion plan
     try:
-        prevddplan,prevpassnum = numpy.loadtxt(checkpoint, dtype=int, 
-                                               skiprows=1, unpack=True)
+        with open(checkpoint, "r") as f:
+            nodenm = f.readline().strip()
+            prevddplan,prevpassnum = map(int, f.readline.strip().split())
+    
     except IOError:
+        nodenm      = "localhost"
         prevddplan  = 0
         prevpassnum = 0
         with open(checkpoint, "w") as f: 
+            f.write("%s\n"%nodenm)
             f.write("%d %d\n"%(prevddplan,prevpassnum))
     
     for ddplan in ddplans[prevddplan:]:
@@ -383,7 +389,7 @@ def main(fits_filenm, workdir, jobid, ddplans):
                 cmd = "realfft %s"%datnm
                 job.FFT_time += timed_execute(cmd)
                 cmd = "zapbirds -zap -zapfile %s -baryv %.6g %s"%\
-                      (default_zaplist, job.baryv, fftnm)
+                      (zaplist, job.baryv, fftnm)
                 job.FFT_time += timed_execute(cmd)
                 cmd = "rednoise %s"%fftnm
                 job.FFT_time += timed_execute(cmd)
@@ -626,51 +632,51 @@ if __name__ == "__main__":
         #
         # If there is <=1GB of RAM per CPU core, the following are preferred
         #
-        # For 4096slow chan data:               lodm    dmstep  dms/call #calls #subs downsamp
-        ddplans['4096slow'].append(dedisp_plan(    0.0,  0.02,      86,    81,  128,       1))
-        ddplans['4096slow'].append(dedisp_plan( 139.32,  0.03,     102,    27,  128,       2))
-        ddplans['4096slow'].append(dedisp_plan( 221.94,  0.05,     102,    33,  128,       4))
-        ddplans['4096slow'].append(dedisp_plan( 390.24,  0.10,     102,    37,  128,       8))
-        ddplans['4096slow'].append(dedisp_plan( 767.64,  0.30,      92,    41,  128,      16))
-        ddplans['4096slow'].append(dedisp_plan(1899.24,  0.50,     102,    22,  128,      32))
-        # For 4096fast chan data:               lodm dmstep dms/call #calls #subs downsamp
-        ddplans['4096fast'].append(dedisp_plan(    0.0,  0.01,      86,    81,  128,       1))
-        ddplans['4096fast'].append(dedisp_plan(  69.66,  0.02,      86,    33,  128,       2))
-        ddplans['4096fast'].append(dedisp_plan( 126.42,  0.03,     102,    29,  128,       4))
-        ddplans['4096fast'].append(dedisp_plan( 215.16,  0.05,     102,    33,  128,       8))
-        ddplans['4096fast'].append(dedisp_plan( 383.46,  0.10,     102,    38,  128,      16))
-        ddplans['4096fast'].append(dedisp_plan( 771.06,  0.30,      92,    41,  128,      32))
-        ddplans['4096fast'].append(dedisp_plan(1902.66,  0.50,     102,    22,  128,      64))
+        # For 4096slow chan data: lodm dmstep dms/call #calls #subs downsamp
+        ddplans['4096slow'].append(dedisp_plan(    0.0,0.02, 86,81,128, 1))
+        ddplans['4096slow'].append(dedisp_plan( 139.32,0.03,102,27,128, 2))
+        ddplans['4096slow'].append(dedisp_plan( 221.94,0.05,102,33,128, 4))
+        ddplans['4096slow'].append(dedisp_plan( 390.24,0.10,102,37,128, 8))
+        ddplans['4096slow'].append(dedisp_plan( 767.64,0.30, 92,41,128,16))
+        ddplans['4096slow'].append(dedisp_plan(1899.24,0.50,102,22,128, 32))
+        # For 4096fast chan data: lodm dmstep dms/call #calls #subs downsamp
+        ddplans['4096fast'].append(dedisp_plan(    0.0,0.01, 86,81,128, 1))
+        ddplans['4096fast'].append(dedisp_plan(  69.66,0.02, 86,33,128, 2))
+        ddplans['4096fast'].append(dedisp_plan( 126.42,0.03,102,29,128, 4))
+        ddplans['4096fast'].append(dedisp_plan( 215.16,0.05,102,33,128, 8))
+        ddplans['4096fast'].append(dedisp_plan( 383.46,0.10,102,38,128,16))
+        ddplans['4096fast'].append(dedisp_plan( 771.06,0.30, 92,41,128,32))
+        ddplans['4096fast'].append(dedisp_plan(1902.66,0.50,102,22,128,64))
     else:
         # If there is >2GB of RAM per CPU core, the following are preferred
         #
-        # For 4096slow chan data:               lodm dmstep dms/call #calls #subs downsamp
-        ddplans['4096slow'].append(dedisp_plan(    0.0,  0.02,     172,    41,  256,       1))
-        ddplans['4096slow'].append(dedisp_plan( 141.04,  0.03,     204,    14,  256,       2))
-        ddplans['4096slow'].append(dedisp_plan( 226.72,  0.05,     204,    16,  256,       4))
-        ddplans['4096slow'].append(dedisp_plan( 389.92,  0.10,     204,    19,  256,       8))
-        ddplans['4096slow'].append(dedisp_plan( 777.52,  0.30,     184,    20,  256,      16))
-        ddplans['4096slow'].append(dedisp_plan(1881.52,  0.50,     204,    11,  256,      32))
-        # For 4096fast chan data:               lodm dmstep dms/call #calls #subs downsamp
-        ddplans['4096fast'].append(dedisp_plan(    0.0,  0.01,     172,    41,  256,       1))
-        ddplans['4096fast'].append(dedisp_plan(  70.52,  0.02,     172,    16,  256,       2))
-        ddplans['4096fast'].append(dedisp_plan( 125.56,  0.03,     204,    15,  256,       4))
-        ddplans['4096fast'].append(dedisp_plan( 217.36,  0.05,     204,    17,  256,       8))
-        ddplans['4096fast'].append(dedisp_plan( 390.76,  0.10,     204,    19,  256,      16))
-        ddplans['4096fast'].append(dedisp_plan( 778.36,  0.30,     204,    20,  256,      32))
-        ddplans['4096fast'].append(dedisp_plan(1882.36,  0.50,     204,    11,  256,      64))
+        # For 4096slow chan data: lodm dmstep dms/call #calls #subs downsamp
+        ddplans['4096slow'].append(dedisp_plan(    0.0,0.02,172,41,256, 1))
+        ddplans['4096slow'].append(dedisp_plan( 141.04,0.03,204,14,256, 2))
+        ddplans['4096slow'].append(dedisp_plan( 226.72,0.05,204,16,256, 4))
+        ddplans['4096slow'].append(dedisp_plan( 389.92,0.10,204,19,256, 8))
+        ddplans['4096slow'].append(dedisp_plan( 777.52,0.30,184,20,256,16))
+        ddplans['4096slow'].append(dedisp_plan(1881.52,0.50,204,11,256,32))
+        # For 4096fast chan data: lodm dmstep dms/call #calls #subs downsamp
+        ddplans['4096fast'].append(dedisp_plan(    0.0,0.01,172,41,256, 1))
+        ddplans['4096fast'].append(dedisp_plan(  70.52,0.02,172,16,256, 2))
+        ddplans['4096fast'].append(dedisp_plan( 125.56,0.03,204,15,256, 4))
+        ddplans['4096fast'].append(dedisp_plan( 217.36,0.05,204,17,256, 8))
+        ddplans['4096fast'].append(dedisp_plan( 390.76,0.10,204,19,256,16))
+        ddplans['4096fast'].append(dedisp_plan( 778.36,0.30,204,20,256,32))
+        ddplans['4096fast'].append(dedisp_plan(1882.36,0.50,204,11,256,64))
 
-    # Arguments to the search program are
-    # sys.argv[1] = PSRFITS file name
-    # sys.argv[2] = working directory name
-    # sys.argv[3] = unique job ID
-    if len(sys.argv) == 4:
-        fits_filenm = sys.argv[1]
-        workdir = sys.argv[2]
-        jobid   = sys.argv[3]
-        main(fits_filenm, workdir, jobid, ddplans)
-    elif len(sys.argv) == 2:
-        fits_filenm = sys.argv[1]
-        main(fits_filenm, ".", None, ddplans)
-    else:
-        print "search.py fits_filenm [workdir] [jobid]"
+    # Create argument parser
+    parser = argparse.ArgumentParser(description="Search data from the "\
+                                     "GBNCC survey for pulsars and transients")
+    parser.add_argument("-w", "--workdir", default=".", 
+                        help="Working directory")
+    parser.add_argument("-i", "--id", dest="jobid", default=None, 
+                        help="Unique job identifier (i.e., a random hash)")
+    parser.add_argument("-z", "--zaplist", default=None,
+                        help="A list of Fourier frequencies to zap")
+    parser.add_argument("infile", dest="fits_filenm", 
+                        help="A psrfits file from the GBNCC survey")
+    args = parser.parse_args()
+    
+    main(args.fits_filenm, args.workdir, args.jobid, args.zaplist, ddplans)
