@@ -11,22 +11,22 @@ user        = "rlynch"
 # Email address where job notifications will be sent (if enabled)
 email       = "rlynch+gbncc_jobs@physics.mcgill.ca"
 # Walltime limit (hh:mm:ss)
-walltimelim = "285:00:00"
+walltimelim = "150:00:00"
 # Maximum size of the 'pending' job queue
 queuelim    = 2
 # Time to wait between submitting a new job when there are no new files or the
 # 'pending' queue is full
 sleeptime   = 5*60
 # Top level analysis directory
-topdir      = "/homes/borgii/rlynch/GBNCC/GBNCC/"
+topdir      = "/sb/project/bgf-180-ac/GBNCC/GBNCC-search/"
 # Base working directory for data reduction (should have at least 13 GB free)
-baseworkdir = os.path.join(topdir, "work")
+baseworkdir = "/localscratch"
 # Base temporary directory for data reduction (should have at least 2 GB free)
-basetmpdir  = os.path.join(topdir, "scratch")
+basetmpdir  = "/localscratch"
 # Directory where pipeline scripts are stored
 pipelinedir = os.path.join(topdir, "pipeline")
 # Directory where raw data files are stored before being processed
-datadir     = os.path.join(topdir, "data")
+datadir     = "/sb/scratch/rlynch"
 # Directory where job submission files are stored
 jobsdir     = os.path.join(topdir, "jobs")
 # Directory wehre log files are stored
@@ -36,7 +36,7 @@ baseoutdir  = os.path.join(topdir, "results")
 # Location of FFT zaplist
 zaplist     = os.path.join(pipelinedir, "lib", "GBNCC.zaplist")
 # Pipeline version (as the git hash)
-#version     = subprocess.Popen("cd %s ; git rev-parse HEAD"%pipelinedir,shell=True,stdout=subprocess.PIPE).stdout.readline().strip()
+version     = subprocess.Popen("cd %s ; git rev-parse HEAD"%pipelinedir,shell=True,stdout=subprocess.PIPE).stdout.readline().strip()
 
 # Dictionary for holding job submission scripts
 subscripts = {"guillimin": 
@@ -50,21 +50,22 @@ subscripts = {"guillimin":
 #PBS -l nodes={nodenm}:ppn=1
 #PBS -l walltime={walltimelim}
 
-export PYTHONPATH=""
-export LD_LIBRARY_PATH="/software/compilers/intel/composerxe-2011.4.191/compiler/lib/intel64:/software/compilers/intel/composerxe-2011.4.191/mkl/lib/intel64:/sb/software/libraries/MKL/10.3/lib/intel64:/software/libraries/PGPLOT/5.2:/sb/software/libraries/CFITSIO/3.28/lib:/sb/project/bgf-180-aa/src/presto_floats_mkl/lib:/sb/project/bgf-180-aa/lib:/sb/project/bgf-180-aa/lib64:/usr/local/lib:/usr/lib/"
-export PATH={workdir}/python-2.6.8/lib64/python2.6/site-packages/ratings2:{workdir}/python-2.6.8/bin:$PATH
-
+export CPATH={workdir}/python-2.6.8/include:{workdir}/python-2.6.8/wx-2.8.12/include:/software/compilers/intel/composerxe-2011.4.191/mkl/include:/software/compilers/intel/composerxe-2011.4.191/mkl/include
+export LIBRARY_PATH={workdir}/python-2.6.8/include:/software/compilers/intel/composerxe-2011.4.191/compiler/lib/intel64:/software/compilers/intel/composerxe-2011.4.191/mkl/lib/intel64:/software/compilers/intel/composerxe-2011.4.191/compiler/lib/intel64:/software/compilers/intel/composerxe-2011.4.191/mkl/lib/intel64
+export PYTHONPATH={workdir}/python-2.6.8/lib64/python2.6/site-packages:{workdir}/python-2.6.8/lib/python2.6/site-packages
+export LD_LIBRARY_PATH={workdir}/python-2.6.8/GotoBLAS_LAPACK/shared:{workdir}/python-2.6.8/wx-2.8.12/lib:{workdir}/python-2.6.8/lib/lib64:{workdir}/python-2.6.8/lib/lib:/software/compilers/intel/composerxe-2011.4.191/compiler/lib/intel64:/software/compilers/intel/composerxe-2011.4.191/mkl/lib/intel64:/sb/software/libraries/MKL/10.3/lib/intel64:/software/libraries/PGPLOT/5.2:/sb/software/libraries/CFITSIO/3.28/lib:/usr/local/lib:/usr/lib/:/sb/project/bgf-180-aa/lib:/sb/project/bgf-180-aa/lib64:/sb/project/bgf-180-aa/src/presto/lib
+export PATH={workdir}/python-2.6.8/bin:{workdir}/python-2.6.8/wx-2.8.12/bin:/opt/moab/bin:/software/tools/datamover:/software/tools/swig-2.0.4/bin:/sb/software/libraries/MKL/10.3/bin:/software/tools/clig/bin:/usr/lib64/qt-3.3/bin:/opt/moab/bin:/usr/kerberos/bin:/usr/local/bin:/bin:/usr/bin:/usr/lpp/mmfs/bin:/sb/software/tools/scripts:/usr/lpp/mmfs/bin:/home/rlynch/bin:/sb/project/bgf-180-aa/bin:/sb/project/bgf-180-aa/src/presto/bin
 
 if [ {nodenm} == 1 ]
   then
     mkdir -p {workdir}
     mv {filenm} {workdir}
     cp {zaplist} {workdir}
-    tar -C {workdir} -xzf {pipelinedir}/lib/python-2.6.8-packages_GBNCC.tgz
+    tar -C {workdir} -xzf {pipelinedir}/lib/python-2.6.8-packages-GBNCC.tar.gz
 fi
-
-search.py {basenm}.fits {workdir} {tmpdir}
-rm -rf {workdir}
+cd {workdir}
+python-2.6.8/bin/search.py {basenm}.fits {workdir} {hashnm}
+#rm -rf {workdir}
 """,
 
 "condor":

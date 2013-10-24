@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-import os, glob, time, datetime, pytz, config, utils
-import database as DB
+import os, shutil, glob, time, datetime, pytz, config, utils, database, msub
 
 while True:
     checkpoints = glob.glob(os.path.join(config.jobsdir, "*.checkpoint"))
@@ -16,6 +15,9 @@ while True:
         
         elif len(filenms) > 0:
             filenm = filenms.pop()
+            shutil.move(filenm, os.path.join(config.datadir, "holding"))
+            filenm = os.path.join(config.datadir, "holding",
+                                  os.path.basename(filenm))
             basenm = os.path.basename(filenm).rstrip(".fits")
             hashnm = os.urandom(8).encode("hex")
             nodenm = "1"
@@ -27,7 +29,8 @@ while True:
         subfilenm = os.path.join(config.jobsdir, jobnm+".sh")
         subfile   = open(subfilenm, "w")
         subfile.write(config.subscript.format(filenm=filenm, basenm=basenm, 
-                                              jobnm=jobnm, workdir=workdir, 
+                                              jobnm=jobnm, workdir=workdir,
+                                              hashnm=hashnm
                                               tmpdir=tmpdir, 
                                               outdir=config.baseoutdir,
                                               logsdir=config.logsdir,
@@ -37,27 +40,30 @@ while True:
                                               walltimelim=config.walltimelim, 
                                               email=config.email))
         subfile.close()
-        jobid,msg = utils.subjob(config.machine, subfile)
+        jobid,msg = utils.subjob(config.machine,subfilenm,options="-o {0} -e {0}".format(config.logsdir))
         if jobid is None: 
             print("ERROR: %s: %s"%(jobnm,msg))
         
         else:
+            while msub.get_all_jobs()[jobid]["State"] == "Idle":
+                time.sleep(5)
+            
             date = datetime.datetime.now()
-            db = DB.Database(DB.databases["observations"])
-            query = "UBDATE GBNCC SET ProcessingStatus='p',"\
-                    "ProcessingID={jobid},ProcessingSite='{site}'"\
-                    "ProcessingAttempts=ProcessingAttemps+1,"\
-                    "ProcessingDate={date},PipelineVersion={version} "\
-                    "WHERE FileName={filenm}".format(jobid=jobid,
-                                                     site=config.institution,
-                                                     date=date.isoformat(),
-                                                     version=config.version,
-                                                     filenm=filenm)
-            nodenm = msub.get_all_jobs[jobid]["MasterHost"]
+            nodenm = msub.get_all_jobs()[jobid]["MasterHost"]
             checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
             with open(checkpoint, "w") as f:
                 f.write(nodenm+"\n")
                 f.write("0 0\n")
+            db = database.Database("observations")
+            query = "UPDATE GBNCC SET ProcessingStatus='p',"\
+                    "ProcessingID='{jobid}',ProcessingSite='{site}',"\
+                    "ProcessingAttempts=ProcessingAttempts+1,"\
+                    "ProcessingDate='{date}',PipelineVersion='{version}' "\
+                    "WHERE FileName='{filenm}'".format(jobid=jobid,
+                                                     site=config.machine,
+                                                     date=date.isoformat(),
+                                                     version=config.version,
+                                                     filenm=os.path.basename(filenm))
             db.execute(query)
             db.commit()
             db.close()

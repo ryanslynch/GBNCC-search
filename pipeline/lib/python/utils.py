@@ -1,17 +1,17 @@
-import os, glob, msub
+import os, glob, msub, config
 
 def getqueue(machine):
     if machine == "guillimin":
-        jobs    = [job for job in nsub.get_all_jobs().itervalues() \
-                       if job["User"] == config.user]
+        myjobs    = [job for job in msub.get_all_jobs().itervalues() \
+                     if job.has_key("User") and job["User"] == config.user]
         nqueued = len([job for job in myjobs if job["State"] == "Idle" \
                        or job["State"] == "Blocked"])
     
     return None
 
-def subjob(machine,subfilenm):
+def subjob(machine, subfilenm, options=""):
     if machine == "guillimin":
-        jobid,out,err = nsub.submit_job(subfilenm)
+        jobid,out,err = msub.submit_job(subfilenm, options)
     
     if   len(out) != 0: return jobid, out.strip()
     elif len(err) != 0: return jobid, err.strip()
