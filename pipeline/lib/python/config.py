@@ -37,6 +37,16 @@ baseoutdir  = os.path.join(topdir, "results")
 zaplist     = os.path.join(pipelinedir, "lib", "GBNCC.zaplist")
 # Pipeline version (as the git hash)
 version     = subprocess.Popen("cd %s ; git rev-parse HEAD 2> /dev/null"%pipelinedir,shell=True,stdout=subprocess.PIPE).stdout.readline().strip()
+# Databases dictionary
+DATABASES = {
+    "observations" : {
+    "dbnm"   : "CONTACT RYAN FOR DB NAME",
+    "hostnm" : "CONTACT RYAN FOR HOST NAME",
+    "usernm" : "CONTACT RYAN FOR USER NAME",
+    "passwd" : "CONTACT RYAN FOR PASSWORD",
+        },
+    }
+
 
 # Dictionary for holding job submission scripts
 subscripts = {"guillimin": 

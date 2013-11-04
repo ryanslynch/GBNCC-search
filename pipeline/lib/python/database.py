@@ -1,17 +1,8 @@
-import MySQLdb
-
-DATABASES = {
-    "observations" : {
-        "dbnm"   : "GBTDataDB",
-        "hostnm" : "pulsar.physics.mcgill.ca",
-        "usernm" : "gbtpsr",
-        "passwd" : "NRAO100-m",
-        },
-    }
+import MySQLdb, config
 
 class Database(object):
     def __init__(self, databasenm):
-        self.database = DATABASES[databasenm]
+        self.database = config.DATABASES[databasenm]
         self.db = MySQLdb.connect(host=self.database["hostnm"],
                                   user=self.database["usernm"],
                                   db=self.database["dbnm"], 
