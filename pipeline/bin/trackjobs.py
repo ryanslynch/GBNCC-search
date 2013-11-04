@@ -1,23 +1,26 @@
 #!/usr/bin/env python
-import time, msub, utils, config
+import os, time, msub, utils, config
 import database as DB
 
+print("Starting GBNCC job tracker...")
 while True:
-    db    = DB.Database(DB.databases["observations"])
-    query = "SELECT ProcessingID,FileName FROM GBNCC WHERE ProcessingStatus='p'"
+    db    = DB.Database("observations")
+    query = "SELECT ID,ProcessingID,FileName FROM GBNCC WHERE ProcessingStatus='p' AND ProcessingSite='%s'"%config.machine
     db.execute(query)
-    ret   = db.cursor().fetchall()
+    ret   = db.fetchall()
     
-    for ID,jobid,filenm in ret:
-        if msub.is_job_done(jobid):
-            MJD,beamid = filenm.split("_")[1:3]
-            outdir = os.path.join(config.baseoutdir, MJD, beamid)
-            status = results_status(outdir)
+    if len(ret) != 0:
+        for ID,jobid,filenm in ret:
+            if msub.is_job_done(jobid):
+                MJD,beamid = filenm.split("_")[1:3]
+                outdir = os.path.join(config.baseoutdir, MJD, beamid)
+                status = utils.results_status(outdir)
+                print("Job %s completed with status %s"%(jobid,status))
                 query = "UPDATE GBNCC SET ProcessingStatus='%s' "\
                         "WHERE ProcessingID=%i"%(status,jobid)
                 db.execute(query)
                 
-        else: pass
+            else: pass
     
     db.close()
     time.sleep(30*60)

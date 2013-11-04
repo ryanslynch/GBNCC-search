@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+import analyse_sp
 import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
 import argparse, numpy, pyfits, presto, sifting, psr_utils
-import ratings, diagnostics, config#, analyse_sp
+import ratings, diagnostics, config
 
 checkpointdir = config.jobsdir
 basetmpdir    = config.basetmpdir
@@ -48,7 +49,7 @@ def get_baryv(ra, dec, mjd, T, obs="GB"):
         'T' is in sec and 'mjd' is (of course) in MJD.
     """
     tts = psr_utils.span(mjd, mjd+T/86400.0, 100)
-    nn = len(tts)
+    nn  = len(tts)
     bts = numpy.zeros(nn, dtype=numpy.float64)
     vel = numpy.zeros(nn, dtype=numpy.float64)
     
@@ -308,8 +309,9 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     except: pass
 
     # Make sure the tmp directory (in a tmpfs mount) exists
-    if job is not None: tmpdir = os.path.join(basetmpdir, job.basefilenm, jobid)
-    else: tmpdir = os.path.join(basetmpdir, job.basefilenm)
+    if job is not None: tmpdir = os.path.join(basetmpdir, job.basefilenm,
+                                              jobid, "tmp")
+    else: tmpdir = os.path.join(basetmpdir, job.basefilenm, "tmp")
     try:
         os.makedirs(tmpdir)
     except: pass
@@ -337,7 +339,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     try:
         with open(checkpoint, "r") as f:
             nodenm = f.readline().strip()
-            prevddplan,prevpassnum = map(int, f.readline.strip().split())
+            prevddplan,prevpassnum = map(int, f.readline().strip().split())
     
     except IOError:
         nodenm      = "localhost"
@@ -435,11 +437,13 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
 
             prevpassnum += 1
             with open(checkpoint, "w") as f:
+                f.write("%s\n"%nodenm)
                 f.write("%d %d\n"%(prevddplan,prevpassnum))
         
         prevddplan += 1
         prevpassnum = 0
         with open(checkpoint, "w") as f:
+            f.write("%s\n"%nodenm)
             f.write("%d %d\n"%(prevddplan,prevpassnum))
     
     # Make the single-pulse plots
@@ -475,12 +479,12 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
         except: pass
     
     # Chen Karako-Argaman's single pulse rating algorithm
-    #if job.masked_fraction < 0.2:
-    #    analyse_sp.main()
-    #else:
-    #    spoutfile = open('groups.txt', 'w')
-    #    spoutfile.write('# Beam skipped because of high RFI\n.')
-    #    spoutfile.close()
+    if job.masked_fraction < 0.2:
+        analyse_sp.main()
+    else:
+        spoutfile = open('groups.txt', 'w')
+        spoutfile.write('# Beam skipped because of high RFI\n.')
+        spoutfile.close()
 
     # Sift through the candidates to choose the best to fold
     
@@ -603,11 +607,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     diagnostics.write_diagnostics(job.basefilenm)
 
     # Move all the important stuff to the output directory
-    subprocess.call(["mv", "*rfifind*", "*.tgz", "*.png", "*.ratings", 
-                     "*.diagnostics", "*.report", job.outputdir])
-    try:
-        subprocess.call(["mv", "*.accelcands", job.outputdir])
-    except: pass
+    subprocess.call("mv *rfifind.[bimors]*  *.accelcands* *.tgz *.png *.ratings *.diagnostics groups.txt %s"%job.outputdir, shell=True)
     
     # Make a file indicating that this beam needs to be viewed
     open("%s/tobeviewed"%job.outputdir, "w").close()
@@ -675,7 +675,7 @@ if __name__ == "__main__":
                         help="Unique job identifier (i.e., a random hash)")
     parser.add_argument("-z", "--zaplist", default=None,
                         help="A list of Fourier frequencies to zap")
-    parser.add_argument("infile", dest="fits_filenm", 
+    parser.add_argument("fits_filenm",
                         help="A psrfits file from the GBNCC survey")
     args = parser.parse_args()
     

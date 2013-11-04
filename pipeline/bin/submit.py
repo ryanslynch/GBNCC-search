@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 import os, shutil, glob, time, datetime, pytz, config, utils, database, msub
 
+#checkpoints = glob.glob(os.path.join(config.jobsdir, "*.checkpoint"))
+checkpoints = []
+
+print("Starting GBNCC job submitter...")
 while True:
-    checkpoints = glob.glob(os.path.join(config.jobsdir, "*.checkpoint"))
     filenms = glob.glob(os.path.join(config.datadir, "guppi*GBNCC*fits"))
     nqueued = utils.getqueue(config.machine)
 
@@ -10,6 +13,7 @@ while True:
         if len(checkpoints) > 0:
             checkpoint = checkpoints.pop()
             basenm,hashnm = checkpoint.split(".")[0:2]
+            basenm = os.path.basename(basenm)
             filenm = basenm + ".fits"
             with open(checkpoint, "r") as f: nodenm = f.readline().strip()
         
@@ -30,7 +34,7 @@ while True:
         subfile   = open(subfilenm, "w")
         subfile.write(config.subscript.format(filenm=filenm, basenm=basenm, 
                                               jobnm=jobnm, workdir=workdir,
-                                              hashnm=hashnm
+                                              hashnm=hashnm,
                                               tmpdir=tmpdir, 
                                               outdir=config.baseoutdir,
                                               logsdir=config.logsdir,
@@ -45,6 +49,7 @@ while True:
             print("ERROR: %s: %s"%(jobnm,msg))
         
         else:
+            print("Submitted %s"%jobnm)
             while msub.get_all_jobs()[jobid]["State"] == "Idle":
                 time.sleep(5)
             
@@ -70,5 +75,7 @@ while True:
             time.sleep(5)
             nqueued = utils.getqueue(config.machine)
             
-    else: time.sleep(config.sleeptime)
+    else:
+        print("Nothing to submit.  Sleeping...")
+        time.sleep(config.sleeptime)
         

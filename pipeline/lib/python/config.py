@@ -36,7 +36,7 @@ baseoutdir  = os.path.join(topdir, "results")
 # Location of FFT zaplist
 zaplist     = os.path.join(pipelinedir, "lib", "GBNCC.zaplist")
 # Pipeline version (as the git hash)
-version     = subprocess.Popen("cd %s ; git rev-parse HEAD"%pipelinedir,shell=True,stdout=subprocess.PIPE).stdout.readline().strip()
+version     = subprocess.Popen("cd %s ; git rev-parse HEAD 2> /dev/null"%pipelinedir,shell=True,stdout=subprocess.PIPE).stdout.readline().strip()
 
 # Dictionary for holding job submission scripts
 subscripts = {"guillimin": 

@@ -8,7 +8,7 @@ import numpy as np
 # Defining some constants
 # These thresholds are for determining whether two groups are close
 # enough to combine
-TIME_THRESH = 0.05 # s
+TIME_THRESH = 0.1 # s
 DM_THRESH = 0.5 # pc cm-3
 
 class SinglePulseGroup:
@@ -23,7 +23,11 @@ class SinglePulseGroup:
         self.max_dm = dm
         self.max_sigma = sigma
         self.center_time = time
-        dt = time/sample
+        if sample == 0:
+            dt = 0 # this will ignore events with sample=0. better would be to use the inf files to determine the dt for these events
+        else:
+            dt = time/sample
+#        dt = time/sample
         self.min_time = time-downfact/2.0*dt
         self.max_time = time+downfact/2.0*dt
         self.singlepulses = [(dm,sigma,time,sample,downfact)]
