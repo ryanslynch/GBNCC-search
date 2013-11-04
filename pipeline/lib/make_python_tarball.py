@@ -21,8 +21,9 @@ site_packages_contents = [ os.path.join(config.pipelinedir,'lib/python/'),
 # no trailing slash because copytree is silly
 site_packages_folder = [os.path.join(config.pipelinedir, "lib/for_tarball/ubc_AI"),
                         os.path.join(config.pipelinedir, "lib/for_tarball/mpfit"),
-                         os.path.join(config.pipelinedir, "lib/for_tarball/pyslalib"),
-                        '/sb/project/bgf-180-aa/lib/python2.6/site-packages/pyfits', ]
+                        os.path.join(config.pipelinedir, "lib/for_tarball/pyslalib"),
+                        os.path.join(config.pipelinedir, "lib/for_tarball/pyfits"),
+                        os.path.join(config.pipelinedir, "lib/for_tarball/pyfits-2.4.0-py2.6.egg-info")]
 
 # filenames of input (base) and output tarballs
 base_tarball = os.path.join(config.pipelinedir, "lib/python-2.6.8-packages-base.tar.gz")

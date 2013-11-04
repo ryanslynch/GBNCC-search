@@ -1,0 +1,13 @@
+Metadata-Version: 1.0
+Name: pyfits
+Version: 2.4.0
+Summary: General Use Python Tools
+Home-page: UNKNOWN
+Author: J. C. Hsu, Paul Barrett, Christopher Hanley, James Taylor, Michael Droettboom
+Author-email: help@stsci.edu
+License: http://www.stsci.edu/resources/software_hardware/pyraf/LICENSE
+Description: UNKNOWN
+Platform: Linux
+Platform: Solaris
+Platform: Mac OS X
+Platform: Win

@@ -11,8 +11,8 @@ packages = ["os", "sys", "shutil", "stat", "socket", "struct", "subprocess",
             "tarfile", "time", "datetime", "pytz", "MySQLdb", "xml",
             "numpy", "scipy", "pylab", "mpfit", "pyfits", "cPickle", "pickle",
             "psr_utils", "pyslalib", "presto", "prepfold", "pypsrcat",
-            "sifting", "ratings", "diagnostics", "profile_tools",
-            "analyse_sp", "group_sp", "sp_utils", "sp_utils2_gbncc",
+            "sifting", "ratings", "diagnostics", "profile_tools", "infodata",
+            "analyse_sp", "group_sp", "sp_utils",
             "config", "utils", "database", "handle_exit", "msub", "matplotlib",
             "__future__"]
 for package in packages:
@@ -54,4 +54,4 @@ print ("success")
 print("To begin processing and\n"\
       "{0}/bin to your PATH and\n"\
       "{0}/lib/python to your PYTHONPATH\n"\
-      "and run driver.py".format(config.pipelinedir))
+      "and run driver.sh".format(config.pipelinedir))

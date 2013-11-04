@@ -5,7 +5,9 @@ import database, config
 
 def download(outdir):
      db = database.Database("observations")
-     query  = "SELECT ID,FilePath,FileName FROM GBNCC WHERE ProcessingStatus='u' OR (ProcessingStatus='f' AND ProcessingAttempts < 3)"
+     query  = "SELECT ID,FilePath,FileName FROM GBNCC WHERE "\
+              "ProcessingStatus='u' OR (ProcessingStatus='f' AND "\
+              "ProcessingAttempts < 3)"
      db.execute(query)
      ret     = db.cursor.fetchone()
      if ret is not None:
@@ -24,13 +26,14 @@ def download(outdir):
                db.commit()
                print("Successfully downloaded %s"%filenm)
           else:
-               query = "UPDATE GBNCC SET ProcessingStatus='u' WHERE ID=%i"%ID
+               query = "UPDATE GBNCC SET ProcessingStatus='u', "\
+                       "ProcessingSite=NULL WHERE ID=%i"ID
                db.execute(query)
                db.commit()
                print("ERROR: Failed to download %s"%filenm)
      
      else:
-          print("No files to download. Sleeping...", end="\r")
+          print("No files to download. Sleeping...")
           time.sleep(30*60)
      
      db.close()
@@ -39,7 +42,7 @@ def download(outdir):
 
 def cleanup():
     query = "UPDATE GBNCC SET ProcessingStatus='u',ProcessingSite=NULL "\
-            "WHERE ProcessingSite='%s'"%config.machine
+            "WHERE ProcessingStatus='d' AND ProcessingSite='%s'"%config.machine
     db = database.Database("observations")
     db.execute(query)
     db.close()
@@ -56,4 +59,5 @@ def main():
     
 if __name__ == "__main__":
     with handle_exit.handle_exit(cleanup):
-        main()
+         print("Starting GBNCC downloader...")
+         main()
