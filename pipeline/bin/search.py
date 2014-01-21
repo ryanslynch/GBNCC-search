@@ -338,15 +338,18 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     # Iterate over the stages of the overall de-dispersion plan
     try:
         with open(checkpoint, "r") as f:
-            nodenm = f.readline().strip()
+            nodenm  = f.readline().strip()
+            queueid = f.readline().strip()
             prevddplan,prevpassnum = map(int, f.readline().strip().split())
     
     except IOError:
         nodenm      = "localhost"
+        queueid     = "None"
         prevddplan  = 0
         prevpassnum = 0
         with open(checkpoint, "w") as f: 
             f.write("%s\n"%nodenm)
+            f.write("%s\n"%queueid)
             f.write("%d %d\n"%(prevddplan,prevpassnum))
     
     for ddplan in ddplans[prevddplan:]:
@@ -438,12 +441,14 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
             prevpassnum += 1
             with open(checkpoint, "w") as f:
                 f.write("%s\n"%nodenm)
+                f.write("%s\n"%queueid)
                 f.write("%d %d\n"%(prevddplan,prevpassnum))
         
         prevddplan += 1
         prevpassnum = 0
         with open(checkpoint, "w") as f:
             f.write("%s\n"%nodenm)
+            f.write("%s\n"%queueid)
             f.write("%d %d\n"%(prevddplan,prevpassnum))
     
     # Make the single-pulse plots

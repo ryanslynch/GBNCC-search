@@ -6,6 +6,30 @@ checkpoints = []
 
 print("Starting GBNCC job submitter...")
 while True:
+    db = database.Database("observations")
+    query = "SELECT ProcessingID,FileName FROM GBNCC WHERE "\
+            "ProcessingStatus='i'"
+    db.execute(query)
+    ret = db.fetchall()
+    if len(ret) != 0:
+        for jobid,filenm in ret:
+            alljobs = msub.get_all_jobs()
+            if alljobs is not None:
+                if alljobs.has_key(str(jobid)):
+                    if alljobs[str(jobid)]["State"] == "Running":
+                        nodenm = alljobs[str(jobid)]["MasterHost"]
+                        jobnm  = alljobs[str(jobid)]["JobName"]
+                        #checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
+                        #with open(checkpoint, "w") as f:
+                        #    f.write(nodenm+"\n")
+                        #    f.write("0 0\n")
+                        query = "UPDATE GBNCC SET ProcessingStatus='p' "\
+                                "WHERE FileName='{filenm}'".format(filenm=filenm)
+                        db.execute(query)
+                    else:
+                        pass
+    db.close()
+    
     filenms = glob.glob(os.path.join(config.datadir, "guppi*GBNCC*fits"))
     nqueued = utils.getqueue(config.machine)
 
@@ -15,7 +39,9 @@ while True:
             basenm,hashnm = checkpoint.split(".")[0:2]
             basenm = os.path.basename(basenm)
             filenm = basenm + ".fits"
-            with open(checkpoint, "r") as f: nodenm = f.readline().strip()
+            #with open(checkpoint, "r") as f:
+            #    nodenm = f.readline().strip()
+            #    jobid  = f.readline().strip()
         
         elif len(filenms) > 0:
             filenm = filenms.pop()
@@ -25,16 +51,19 @@ while True:
             basenm = os.path.basename(filenm).rstrip(".fits")
             hashnm = os.urandom(8).encode("hex")
             nodenm = "1"
+            jobid  = "$PBS_JOBID"
         
         jobnm   = basenm + "." +  hashnm
-        workdir = os.path.join(config.baseworkdir, basenm, hashnm)
-        tmpdir  = os.path.join(config.basetmpdir, basenm, hashnm, "tmp")
+        workdir = os.path.join(config.baseworkdir, jobid, basenm, hashnm)
+        tmpdir  = os.path.join(config.basetmpdir, jobid, basenm, hashnm, "tmp")
 
         subfilenm = os.path.join(config.jobsdir, jobnm+".sh")
         subfile   = open(subfilenm, "w")
         subfile.write(config.subscript.format(filenm=filenm, basenm=basenm, 
                                               jobnm=jobnm, workdir=workdir,
-                                              hashnm=hashnm,
+                                              baseworkdir=config.baseworkdir,
+                                              hashnm=hashnm, jobid=jobid,
+                                              jobsdir=config.jobsdir,
                                               tmpdir=tmpdir, 
                                               outdir=config.baseoutdir,
                                               logsdir=config.logsdir,
@@ -50,30 +79,37 @@ while True:
         
         else:
             print("Submitted %s"%jobnm)
-            while msub.get_all_jobs()[jobid]["State"] == "Idle":
-                time.sleep(5)
-            
-            date = datetime.datetime.now()
-            nodenm = msub.get_all_jobs()[jobid]["MasterHost"]
-            checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
-            with open(checkpoint, "w") as f:
-                f.write(nodenm+"\n")
-                f.write("0 0\n")
-            db = database.Database("observations")
-            query = "UPDATE GBNCC SET ProcessingStatus='p',"\
-                    "ProcessingID='{jobid}',ProcessingSite='{site}',"\
-                    "ProcessingAttempts=ProcessingAttempts+1,"\
-                    "ProcessingDate='{date}',PipelineVersion='{version}' "\
-                    "WHERE FileName='{filenm}'".format(jobid=jobid,
-                                                     site=config.machine,
-                                                     date=date.isoformat(),
-                                                     version=config.version,
-                                                     filenm=os.path.basename(filenm))
-            db.execute(query)
-            db.commit()
-            db.close()
-            time.sleep(5)
-            nqueued = utils.getqueue(config.machine)
+            alljobs = msub.get_all_jobs()
+            if alljobs is not None:
+                if alljobs[jobid]["State"] == "Idle":
+                    status = "i"
+                else:
+                    status = "p"
+                    nodenm = alljobs[jobid]["MasterHost"]
+                    checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
+                    with open(checkpoint, "w") as f:
+                        f.write(nodenm+"\n")
+                        f.write("0 0\n")
+
+                date = datetime.datetime.now()
+                query = "UPDATE GBNCC SET ProcessingStatus='{status}',"\
+                        "ProcessingID='{jobid}',ProcessingSite='{site}',"\
+                        "ProcessingAttempts=ProcessingAttempts+1,"\
+                        "ProcessingDate='{date}',"\
+                        "PipelineVersion='{version}' "\
+                        "WHERE FileName='{filenm}'".format(status=status,
+                                                           jobid=jobid,
+                                                           site=config.machine,
+                                                           date=date.isoformat(),
+                                                           version=config.version,
+                                                           filenm=os.path.basename(filenm))
+                
+                db = database.Database("observations")
+                db.execute(query)
+                db.commit()
+                db.close()
+        time.sleep(30)
+        nqueued = utils.getqueue(config.machine)
             
     else:
         print("Nothing to submit.  Sleeping...")

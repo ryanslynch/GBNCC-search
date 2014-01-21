@@ -5,13 +5,14 @@ import database as DB
 print("Starting GBNCC job tracker...")
 while True:
     db    = DB.Database("observations")
-    query = "SELECT ID,ProcessingID,FileName FROM GBNCC WHERE ProcessingStatus='p' AND ProcessingSite='%s'"%config.machine
+    query = "SELECT ID,ProcessingID,FileName FROM GBNCC WHERE (ProcessingStatus='p' OR ProcessingStatus='i') AND ProcessingSite='%s'"%config.machine
     db.execute(query)
     ret   = db.fetchall()
+    alljobs = msub.get_all_jobs()
     
-    if len(ret) != 0:
+    if len(ret) != 0 and alljobs is not None:
         for ID,jobid,filenm in ret:
-            if msub.is_job_done(jobid):
+            if not alljobs.has_key(str(jobid)):
                 MJD,beamid = filenm.split("_")[1:3]
                 outdir = os.path.join(config.baseoutdir, MJD, beamid)
                 status = utils.results_status(outdir)
