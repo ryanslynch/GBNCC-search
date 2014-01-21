@@ -51,7 +51,7 @@ for dir in [config.datadir,os.path.join(config.datadir,"holding"),
             sys.exit(1)
 print ("success")
 
-print("To begin processing and\n"\
+print("To begin processing add\n"\
       "{0}/bin to your PATH and\n"\
       "{0}/lib/python to your PYTHONPATH\n"\
       "and run driver.sh".format(config.pipelinedir))

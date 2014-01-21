@@ -13,7 +13,7 @@ def download(outdir):
      if ret is not None:
           ID      = ret[0]
           filenm  = os.path.join(*ret[1:])
-          cmd     = "rsync -aux pulsar.physics.mcgill.ca:%s %s"%(filenm,outdir)
+          cmd     = "rsync astro.cv.nrao.edu:%s %s"%(filenm,outdir)
           
           query   = "UPDATE GBNCC SET ProcessingStatus='d',"\
                     "ProcessingSite='%s' WHERE ID=%i"%(config.machine,ID)
@@ -27,7 +27,7 @@ def download(outdir):
                print("Successfully downloaded %s"%filenm)
           else:
                query = "UPDATE GBNCC SET ProcessingStatus='u', "\
-                       "ProcessingSite=NULL WHERE ID=%i"ID
+                       "ProcessingSite=NULL WHERE ID=%i"%ID
                db.execute(query)
                db.commit()
                print("ERROR: Failed to download %s"%filenm)

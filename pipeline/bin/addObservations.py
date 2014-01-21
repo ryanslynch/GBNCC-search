@@ -33,6 +33,7 @@ def dms_to_rad(deg, min, sec):
         sign = -1
     elif (deg==0.0 and (min < 0.0 or sec < 0.0)):
         sign = -1
+        
     else:
         sign = 1
     return sign * ARCSECTORAD * \
@@ -66,36 +67,40 @@ def parse_files(filenms):
     info = []
     for filenm in filenms:
         d = {}
-        hdulist = fits.open(filenm, ignore_missing_end=True)
-        hdr0 = hdulist[0].header
-        hdr1 = hdulist[1].header
-        hdulist.close()
-        d["BeamID"] = int(hdr0["SRC_NAME"].strip("GBNCC"))
-        d["RightAscension"] = ra_to_rad(hdr0["RA"])*RADTODEG
-        d["Declination"] = dec_to_rad(hdr0["DEC"])*RADTODEG
-        c = coordinates.ICRSCoordinates(ra=d["RightAscension"],
-                                        dec=d["Declination"],
-                                        unit=(units.degree,units.degree))
-        d["GalacticLon"] = c.galactic.l.degrees
-        d["GalacticLat"] = c.galactic.b.degrees
-        d["DateObserved"] = hdr0["STT_IMJD"] + hdr0["STT_SMJD"]/SECPERDAY
-        d["CenterFreq"] = hdr0["OBSFREQ"]
-        d["BW"] = abs(hdr0["OBSBW"])
-        d["SamplingTime"] = hdr1["TBIN"]*1000000
-        d["IntTime"] = hdr1["NAXIS2"]*hdr1["NSBLK"]*hdr1["TBIN"]
-        d["FileName"] = os.path.split(filenm)[1]
-        d["FilePath"] = os.path.split(os.path.abspath(filenm))[0]
-        d["ArchiveLocation"] = "NULL"
-        d["FileSize"] = os.path.getsize(filenm)
-        d["ProcessingStatus"] = "u"
-        d["ProcessingAttempts"] = 0
-        d["ProcessingSite"] = "NULL"
-        d["ProcessingID"] = "NULL"
-        d["ProcessingDate"] = "NULL"
-        d["PipelineVersion"] = "NULL"
-        d["UploadDate"] = datetime.datetime.fromtimestamp(os.path.getmtime(filenm)).strftime("%Y-%m-%dT%H:%M:%S")
-        info.append(d)
+        try:
+            hdulist = fits.open(filenm, ignore_missing_end=True)
+            hdr0 = hdulist[0].header
+            hdr1 = hdulist[1].header
+            hdulist.close()
+            d["BeamID"] = int(hdr0["SRC_NAME"].strip("GBNCC"))
+            d["RightAscension"] = ra_to_rad(hdr0["RA"])*RADTODEG
+            d["Declination"] = dec_to_rad(hdr0["DEC"])*RADTODEG
+            c = coordinates.ICRSCoordinates(ra=d["RightAscension"],
+                                            dec=d["Declination"],
+                                            unit=(units.degree,units.degree))
+            d["GalacticLon"] = c.galactic.l.degrees
+            d["GalacticLat"] = c.galactic.b.degrees
+            d["DateObserved"] = hdr0["STT_IMJD"] + hdr0["STT_SMJD"]/SECPERDAY
+            d["CenterFreq"] = hdr0["OBSFREQ"]
+            d["BW"] = abs(hdr0["OBSBW"])
+            d["SamplingTime"] = hdr1["TBIN"]*1000000
+            d["IntTime"] = hdr1["NAXIS2"]*hdr1["NSBLK"]*hdr1["TBIN"]
+            d["FileName"] = os.path.split(filenm)[1]
+            d["FilePath"] = os.path.split(os.path.abspath(filenm))[0]
+            d["ArchiveLocation"] = "NULL"
+            d["FileSize"] = os.path.getsize(filenm)
+            d["ProcessingStatus"] = "u"
+            d["ProcessingAttempts"] = 0
+            d["ProcessingSite"] = "NULL"
+            d["ProcessingID"] = "NULL"
+            d["ProcessingDate"] = "NULL"
+            d["PipelineVersion"] = "NULL"
+            d["UploadDate"] = datetime.datetime.fromtimestamp(os.path.getmtime(filenm)).strftime("%Y-%m-%dT%H:%M:%S")
+            info.append(d)
 
+        except:
+            print("Failed to read %s"%filenm)
+    
     return info
         
 
@@ -113,7 +118,15 @@ def upload(filenms):
      return True
 
 if __name__ == "__main__":
-    filenms = sys.argv[1:]
+    if sys.argv[1] == "--from-file":
+        filenms = numpy.loadtxt(sys.argv[2], dtype=str)
+    else:
+        filenms = sys.argv[1:]
+    db = database.Database("observations")
+    query = "SELECT FileName FROM GBNCC"
+    db.execute(query)
+    ret = numpy.array(db.fetchall())
+    filenms = [filenm for filenm in filenms if os.path.basename(filenm) not in ret]
     status = upload(filenms)
     if status: print("All files uploaded successfully")
     
