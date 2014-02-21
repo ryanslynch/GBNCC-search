@@ -53,7 +53,7 @@ while True:
             nodenm = "1"
             jobid  = "$PBS_JOBID"
         
-        jobnm   = basenm + "." +  hashnm
+        jobnm   = "phase2test." + basenm + "." +  hashnm
         workdir = os.path.join(config.baseworkdir, jobid, basenm, hashnm)
         tmpdir  = os.path.join(config.basetmpdir, jobid, basenm, hashnm, "tmp")
 
