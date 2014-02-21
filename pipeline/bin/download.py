@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import os, sys, subprocess, time, handle_exit
-import database, config
+import database, config, utils
 
 def download(outdir):
      db = database.Database("observations")
@@ -55,8 +55,12 @@ def main():
         outdir = config.datadir
 
     while True:
-        download(outdir)
-    
+        if utils.get_size(config.datadir) < config.datadir_lim:
+            download(outdir)
+        else:
+            print("Disk full. Sleeping...")
+            time.sleep(config.sleeptime)
+
 if __name__ == "__main__":
     with handle_exit.handle_exit(cleanup):
          print("Starting GBNCC downloader...")

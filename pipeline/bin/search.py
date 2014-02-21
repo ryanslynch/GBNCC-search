@@ -403,7 +403,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                 except: pass
                 
                 # Do the low-acceleration search
-                cmd = "accelsearch -harmpolish -numharm %d -sigma %f -zmax %d -flo %f %s"%\
+                cmd = "accelsearch -inmem -numharm %d -sigma %f -zmax %d -flo %f %s"%\
                       (lo_accel_numharm, lo_accel_sigma, lo_accel_zmax, lo_accel_flo, fftnm)
                 job.lo_accelsearch_time += timed_execute(cmd)
                 try:
@@ -415,7 +415,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                 except: pass
         
                 # Do the high-acceleration search
-                cmd = "accelsearch -harmpolish -numharm %d -sigma %f -zmax %d -flo %f %s"%\
+                cmd = "accelsearch -inmem -numharm %d -sigma %f -zmax %d -flo %f %s"%\
                       (hi_accel_numharm, hi_accel_sigma, hi_accel_zmax, hi_accel_flo, fftnm)
                 job.hi_accelsearch_time += timed_execute(cmd)
                 try:
