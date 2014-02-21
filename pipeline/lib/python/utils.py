@@ -41,4 +41,13 @@ def results_status(outdir):
         return "w"
     else:
         return "s"
-        
+
+def get_size(path):
+    size = 0
+    for dirpath,dirnms,filenms in os.walk(path):
+        for f in filenms:
+            size += os.path.getsize(os.path.join(dirpath,f))
+
+    return size
+
+
