@@ -477,11 +477,12 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     for dmglob, dmrangestr in zip(dmglobs, dmrangestrs):
         cmd = 'single_pulse_search.py -t %f -g "%s"' % \
               (singlepulse_plot_SNR, dmglob)
-        job.singlepulse_time += timed_execute(cmd)
-        try:
-            os.rename(psname,
-                      job.basefilenm+"_DMs%s_singlepulse.ps"%dmrangestr)
-        except: pass
+        #Disabled making of plots to avoid memory issues on guillimin
+        #job.singlepulse_time += timed_execute(cmd)
+        #try:
+        #    os.rename(psname,
+        #              job.basefilenm+"_DMs%s_singlepulse.ps"%dmrangestr)
+        #except: pass
     
     # Chen Karako-Argaman's single pulse rating algorithm
     if job.masked_fraction < 0.2:
