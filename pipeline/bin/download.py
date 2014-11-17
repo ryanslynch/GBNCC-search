@@ -5,9 +5,11 @@ import database, config, utils
 
 def download(outdir):
      db = database.Database("observations")
+     #query  = "SELECT ID,FilePath,FileName FROM GBNCC WHERE "\
+     #         "ProcessingStatus='u' OR (ProcessingStatus='f' AND "\
+     #         "ProcessingAttempts < 10)"
      query  = "SELECT ID,FilePath,FileName FROM GBNCC WHERE "\
-              "ProcessingStatus='u' OR (ProcessingStatus='f' AND "\
-              "ProcessingAttempts < 3)"
+              "ProcessingStatus='u'"
      db.execute(query)
      ret     = db.cursor.fetchone()
      if ret is not None:

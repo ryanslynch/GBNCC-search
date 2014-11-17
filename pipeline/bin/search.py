@@ -83,7 +83,7 @@ def timed_execute(cmd, run_cmd=1):
     end = time.time()
     return end - start
 
-def get_folding_command(cand, obs, ddplans):
+def get_folding_command(cand, obs, ddplans, maskfilenm):
     """
     get_folding_command(cand, obs, ddplans):
         Return a command for prepfold for folding the subbands using
@@ -128,9 +128,9 @@ def get_folding_command(cand, obs, ddplans):
     else:
         Mp, Mdm, N = 1, 1, 200
         otheropts = "-npart 30 -nopdsearch -pstep 1 -pdstep 2 -dmstep 1"
-    return "prepfold -noxwin -nsub 128 -accelcand %d -accelfile %s.cand -dm %.2f -o %s %s -n %d -npfact %d -ndmfact %d %s" % \
+    return "prepfold -noxwin -nsub 128 -accelcand %d -accelfile %s.cand -dm %.2f -o %s %s -n %d -npfact %d -ndmfact %d -mask %s %s" % \
            (cand.candnum, cand.filename, cand.DM, outfilenm,
-            otheropts, N, Mp, Mdm, fitsfile)
+            otheropts, N, Mp, Mdm, maskfilenm fitsfile)
 
 class obs_info:
     """
@@ -330,6 +330,8 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                job.fits_filenm, job.basefilenm)
         job.rfifind_time += timed_execute(cmd)
     maskfilenm = job.basefilenm + "_rfifind.mask"
+    ### COPYING HERE TO AID IN DEBUGGING ###
+    subprocess.call("cp *rfifind.[bimors]* %s"%job.outputdir, shell=True)
     # Find the fraction that was suggested to be masked
     # Note:  Should we stop processing if the fraction is
     #        above some large value?  Maybe 30%?
@@ -469,7 +471,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                basedmb+"1[0-9][0-9][0-9].[0-9][0-9]"+basedme +
                basedmb+"20[0-9][0-9].[0-9][0-9]"+basedme,
                basedmb+"2[0-9][0-9][0-9].[0-9][0-9]"+basedme +
-               basedmb+"3[0-9][0-9].[0-9][0-9]"+basedme,
+               basedmb+"3[0-9][0-9][0-9].[0-9][0-9]"+basedme,
                ]
     dmrangestrs = ["0-30", "20-110", "100-310", "300-1100", "1000-2100", 
                    "2000-3000+"]
@@ -477,20 +479,20 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     for dmglob, dmrangestr in zip(dmglobs, dmrangestrs):
         cmd = 'single_pulse_search.py -t %f -g "%s"' % \
               (singlepulse_plot_SNR, dmglob)
-        #Disabled making of plots to avoid memory issues on guillimin
-        #job.singlepulse_time += timed_execute(cmd)
-        #try:
-        #    os.rename(psname,
-        #              job.basefilenm+"_DMs%s_singlepulse.ps"%dmrangestr)
-        #except: pass
+        job.singlepulse_time += timed_execute(cmd)
+        try:
+            os.rename(psname,
+                      job.basefilenm+"_DMs%s_singlepulse.ps"%dmrangestr)
+        except: pass
     
     # Chen Karako-Argaman's single pulse rating algorithm
-    if job.masked_fraction < 0.2:
-        analyse_sp.main()
-    else:
-        spoutfile = open('groups.txt', 'w')
-        spoutfile.write('# Beam skipped because of high RFI\n.')
-        spoutfile.close()
+    # DISABLED DUE TO EXCESSIVE MEMORY USAGE
+    #if job.masked_fraction < 0.2:
+    #    analyse_sp.main()
+    #else:
+    #    spoutfile = open('groups.txt', 'w')
+    #    spoutfile.write('# Beam skipped because of high RFI\n.')
+    #    spoutfile.close()
 
     # Sift through the candidates to choose the best to fold
     
@@ -539,7 +541,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
         if cands_folded == max_lo_cands_to_fold:
             break
         elif cand.sigma > to_prepfold_sigma:
-            job.folding_time += timed_execute(get_folding_command(cand, job, ddplans))
+            job.folding_time += timed_execute(get_folding_command(cand, job, ddplans, maskfilenm))
             cands_folded += 1
     cands_folded = 0
     for cand in hi_accel_cands.cands:

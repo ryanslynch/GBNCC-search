@@ -24,10 +24,10 @@ def submit_job(filename, options=""):
 
 
 def find_jobid(message):
-    '''Finds the jobid in the output from nsub. The job id can either
+    '''Finds the jobid in the output from qsub. The job id can either
     be just a number or Moab.number.'''
     # Optional \r because Windows python2.4 can't figure out \r\n is newline
-    match=re.search("^((Moab.)?(\d+))[\r]?$",message,re.IGNORECASE|re.MULTILINE)
+    match=re.search("^((Moab.)?(\d+))[\r]?",message,re.IGNORECASE|re.MULTILINE)
     if match:
         return match.group(1)
     return None

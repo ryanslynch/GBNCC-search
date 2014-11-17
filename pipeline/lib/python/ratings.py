@@ -198,8 +198,8 @@ def Prepfold_Sigma(pfd):
     # Calculate the equivalent Gaussian significance
     dof   = pfd.proflen - 1
     chi2  = redchi2*dof
-    prob  = S.special.chdtr(dof,chi2)
-    sigma = S.special.ndtri(prob)
+    prob  = S.special.chdtrc(dof,chi2)
+    sigma = -S.special.ndtri(prob)
 
     # Rescale the chi^2 by the off-pulse chi^2 value (so that off-pulse chi^2
     # is equal to 1) and re-compute the equivalent Gaussian significance
@@ -207,8 +207,8 @@ def Prepfold_Sigma(pfd):
     chi2_scale       = 1.0/offpulse_redchi2
     rescaled_redchi2 = chi2_scale*redchi2
     rescaled_chi2    = rescaled_redchi2*dof
-    rescaled_prob    = S.special.chdtr(dof, rescaled_chi2)
-    rescaled_sigma   = S.special.ndtri(prob)
+    rescaled_prob    = S.special.chdtrc(dof, rescaled_chi2)
+    rescaled_sigma   = -S.special.ndtri(prob)
 
     # Store the ratings values
     rating1 = sigma

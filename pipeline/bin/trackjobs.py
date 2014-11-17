@@ -14,8 +14,9 @@ while True:
         for ID,jobid,filenm in ret:
             if not alljobs.has_key(str(jobid)):
                 MJD,beamid = filenm.split("_")[1:3]
+                basenm = filenm.strip(".fits")
                 outdir = os.path.join(config.baseoutdir, MJD, beamid)
-                status = utils.results_status(outdir)
+                status = utils.results_status(outdir, basenm)
                 print("Job %s completed with status %s"%(jobid,status))
                 query = "UPDATE GBNCC SET ProcessingStatus='%s' "\
                         "WHERE ProcessingID=%i"%(status,jobid)
