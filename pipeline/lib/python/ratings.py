@@ -208,7 +208,7 @@ def Prepfold_Sigma(pfd):
     rescaled_redchi2 = chi2_scale*redchi2
     rescaled_chi2    = rescaled_redchi2*dof
     rescaled_prob    = S.special.chdtrc(dof, rescaled_chi2)
-    rescaled_sigma   = -S.special.ndtri(prob)
+    rescaled_sigma   = -S.special.ndtri(rescaled_prob)
 
     # Store the ratings values
     rating1 = sigma
