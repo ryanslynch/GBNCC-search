@@ -130,7 +130,7 @@ def get_folding_command(cand, obs, ddplans, maskfilenm):
         otheropts = "-npart 30 -nopdsearch -pstep 1 -pdstep 2 -dmstep 1"
     return "prepfold -noxwin -nsub 128 -accelcand %d -accelfile %s.cand -dm %.2f -o %s %s -n %d -npfact %d -ndmfact %d -mask %s %s" % \
            (cand.candnum, cand.filename, cand.DM, outfilenm,
-            otheropts, N, Mp, Mdm, maskfilenm fitsfile)
+            otheropts, N, Mp, Mdm, maskfilenm, fitsfile)
 
 class obs_info:
     """
