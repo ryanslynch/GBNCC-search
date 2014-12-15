@@ -9,7 +9,7 @@ from subprocess import Popen, PIPE
 from xml.dom.minidom import parseString
 
 
-_submission_script = "msub"
+_submission_script = "qsub"
 _debug = True
 
 def submit_job(filename, options=""):

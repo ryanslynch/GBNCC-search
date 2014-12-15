@@ -1,23 +1,27 @@
-import os, glob, msub, config
+import os, glob, config, PBSQuery
+from subprocess import Popen, PIPE
 
 def getqueue(machine):
+    queue = PBSQuery.PBSQuery()
     if machine == "guillimin":
-        alljobs = msub.get_all_jobs()
+        alljobs = queue.getjobs()
         if alljobs is not None:
             myjobs    = [job for job in alljobs.itervalues() \
-                         if job.has_key("User") and job["User"] == config.user]
+                         if job.has_key("euser") and \
+                         job["euser"][0] == config.user]
         else: myjobs = []
-        nqueued = len([job for job in myjobs if job["State"] == "Idle" \
-                       or job["State"] == "Blocked"])
+        nqueued = len([job for job in myjobs if job["job_state"][0] == "Q" \
+                       or job["job_state"] == "B"])
     
     return nqueued
 
 def subjob(machine, subfilenm, options=""):
     if machine == "guillimin":
-        jobid,out,err = msub.submit_job(subfilenm, options)
-    
-    if   len(out) != 0: return jobid, out.strip()
-    elif len(err) != 0: return jobid, err.strip()
+        cmd = "qsub " + options + " " + subfilenm
+        process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+        jobid,err = process.communicate()
+            
+    if len(err) != 0: return None, err.strip()
     else: return jobid, None
 
 

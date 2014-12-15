@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-import os, shutil, glob, time, datetime, pytz, config, utils, database, msub
+import os, shutil, glob, time, datetime, pytz, config, utils, database, PBSQuery
 
 #checkpoints = glob.glob(os.path.join(config.jobsdir, "*.checkpoint"))
 checkpoints = []
 
 print("Starting GBNCC job submitter...")
 while True:
+    queue = PBSQuery.PBSQuery()
     db = database.Database("observations")
     query = "SELECT ProcessingID,FileName FROM GBNCC WHERE "\
             "ProcessingStatus='i'"
@@ -13,12 +14,12 @@ while True:
     ret = db.fetchall()
     if len(ret) != 0:
         for jobid,filenm in ret:
-            alljobs = msub.get_all_jobs()
+            alljobs = queue.getjobs()
             if alljobs is not None:
                 if alljobs.has_key(str(jobid)):
-                    if alljobs[str(jobid)]["State"] == "Running":
-                        nodenm = alljobs[str(jobid)]["MasterHost"]
-                        jobnm  = alljobs[str(jobid)]["JobName"]
+                    if alljobs[str(jobid)]["job_state"][0] == "R":
+                        nodenm = alljobs[str(jobid)]["exec_host"][0]
+                        jobnm  = alljobs[str(jobid)]["Job_Name"][0]
                         #checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
                         #with open(checkpoint, "w") as f:
                         #    f.write(nodenm+"\n")
@@ -80,13 +81,13 @@ while True:
         else:
             print("Submitted %s"%jobnm)
             time.sleep(30)
-            alljobs = msub.get_all_jobs()
+            alljobs = queue.getjobs()
             if alljobs is not None:
-                if alljobs[jobid]["State"] == "Idle":
+                if alljobs[jobid]["job_state"][0] == "Q":
                     status = "i"
                 else:
                     status = "p"
-                    nodenm = alljobs[jobid]["MasterHost"]
+                    nodenm = alljobs[jobid]["exec_host"][0]
                     checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
                     with open(checkpoint, "w") as f:
                         f.write(nodenm+"\n")

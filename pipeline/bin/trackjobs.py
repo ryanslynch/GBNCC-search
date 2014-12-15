@@ -1,14 +1,15 @@
 #!/usr/bin/env python
-import os, time, msub, utils, config
+import os, time, utils, config, PBSQuery
 import database as DB
 
 print("Starting GBNCC job tracker...")
 while True:
+    queue = PBSQuery.PBSQuery()
     db    = DB.Database("observations")
     query = "SELECT ID,ProcessingID,FileName FROM GBNCC WHERE (ProcessingStatus='p' OR ProcessingStatus='i') AND ProcessingSite='%s'"%config.machine
     db.execute(query)
     ret   = db.fetchall()
-    alljobs = msub.get_all_jobs()
+    alljobs = queue.getjobs()
     
     if len(ret) != 0 and alljobs is not None:
         for ID,jobid,filenm in ret:

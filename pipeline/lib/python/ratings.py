@@ -10,7 +10,8 @@ import prepfold as PF
 import psr_utils as PU
 import pypsrcat as PSRCAT
 import profile_tools as PT
-import cPickle#, ubc_AI.training
+import cPickle
+import ubc_AI.data
 
 try:
     from pyslalib.slalib import sla_dsep
@@ -37,8 +38,8 @@ INTEGRATED_SNR_THRESHOLD = 5.0
 # The FWHM of the telescope beam (radians)
 BEAM_FWHM                = 30.0/60.0*N.pi/180.0
 # The UBC AI classsifier data
-#ubc_AI_classifier_name = "/sb/project/bgf-180-aa/lib/python2.6/site-packages/ubc_AI/trained_AI/clfl2_FL.pkl"
-#ubc_AI_classifier = cPickle.load(open(ubc_AI_classifier_name, "r"))
+ubc_AI_classifier_name = "/gs/project/bgf-180-ad/PALFA3/software/lib/python2.7/site-packages/ubc_AI/trained_AI/clfl2_FL.pkl"
+ubc_AI_classifier = cPickle.load(open(ubc_AI_classifier_name, "rb"))
 
 # Utility function definitions
 def calc_persistence_metrics(subints, on_pulse_bins, off_pulse_bins):
@@ -171,7 +172,6 @@ def Prepfold_Sigma(pfd):
     ----------
         pfd : class
         An instance of the prepfold.pfd class
-
     Returns
     -------
     names : list
@@ -200,6 +200,7 @@ def Prepfold_Sigma(pfd):
     chi2  = redchi2*dof
     prob  = S.special.chdtrc(dof,chi2)
     sigma = -S.special.ndtri(prob)
+    if sigma > 500: sigma = 999
 
     # Rescale the chi^2 by the off-pulse chi^2 value (so that off-pulse chi^2
     # is equal to 1) and re-compute the equivalent Gaussian significance
@@ -209,6 +210,7 @@ def Prepfold_Sigma(pfd):
     rescaled_chi2    = rescaled_redchi2*dof
     rescaled_prob    = S.special.chdtrc(dof, rescaled_chi2)
     rescaled_sigma   = -S.special.ndtri(rescaled_prob)
+    if rescaled_sigma > 500: rescaled_sigma = 999
 
     # Store the ratings values
     rating1 = sigma
@@ -582,7 +584,8 @@ def Known_Pulsar_Rating(pfd):
     # Now loop through the catalog of known pulsars and find any that are
     # close to the candidate
     nearby_psrs = [psr for psr in PSRCAT.psrs \
-                   if sla_dsep(cand_ra,cand_dec,psr.ra,psr.dec)<1.3*BEAM_FWHM]
+                   if (hasattr(psr, "ra") and hasattr(psr, "dec") and \
+                   sla_dsep(cand_ra,cand_dec,psr.ra,psr.dec)<1.3*BEAM_FWHM)]
 
     # If there were no pulsars nearby, return a rating of 0.0 and exit
     if len(nearby_psrs) == 0:
@@ -676,9 +679,8 @@ def Known_RFI_Freq_Diff(pfd):
 
     return [name1],[rating1]
 
-"""
 def UBC_AI_Rating(pfd, classifier=ubc_AI_classifier):
-    # PUT QUOTES BACK
+    """
     Run the UBC pfd artificial intelligence rater.
 
     Parameters
@@ -692,23 +694,20 @@ def UBC_AI_Rating(pfd, classifier=ubc_AI_classifier):
         A list of ratings names
     ratings : list
         A list of ratings values
-    # PUT QUOTES BACK
+    """
     # The rating name
     name1 = "UBC_AI"
 
-    pfd.__class__ = ubc_AI.training.pfddata
-    pfd.__init__("self")
-
-    rating1 = classifier.report_score([pfd])[0]
+    rating1 = classifier.report_score([ubc_AI.data.pfdreader(pfd.pfd_filename)])[0]
     
     return [name1],[rating1]
-"""
+
 
 # A list of all the ratings
 all_ratings = [Prepfold_Sigma, DM0_Comparison_Ratings,
                Single_Gaussian_Ratings, Multi_Gaussian_Ratings,
                Phase_Wiggle_Ratings, Known_Pulsar_Rating,
-               Known_RFI_Freq_Diff]#, UBC_AI_Rating]
+               Known_RFI_Freq_Diff, UBC_AI_Rating]
 
 
 # Driver function definition
