@@ -4,9 +4,10 @@ import os, shutil, glob, time, datetime, pytz, config, utils, database, PBSQuery
 #checkpoints = glob.glob(os.path.join(config.jobsdir, "*.checkpoint"))
 checkpoints = []
 
+queue = PBSQuery.PBSQuery()
+
 print("Starting GBNCC job submitter...")
 while True:
-    queue = PBSQuery.PBSQuery()
     db = database.Database("observations")
     query = "SELECT ProcessingID,FileName FROM GBNCC WHERE "\
             "ProcessingStatus='i'"
@@ -32,7 +33,7 @@ while True:
     db.close()
     
     filenms = glob.glob(os.path.join(config.datadir, "guppi*GBNCC*fits"))
-    nqueued = utils.getqueue(config.machine)
+    nqueued = utils.getqueue(config.machine,queue)
 
     while nqueued<config.queuelim and (len(filenms)>0 or len(checkpoints)>0):
         if len(checkpoints) > 0:
@@ -75,6 +76,7 @@ while True:
                                               email=config.email))
         subfile.close()
         jobid,msg = utils.subjob(config.machine,subfilenm,options="-o {0} -e {0}".format(config.logsdir))
+        jobid = jobid.strip()
         if jobid is None: 
             print("ERROR: %s: %s"%(jobnm,msg))
         
@@ -110,7 +112,7 @@ while True:
                 db.execute(query)
                 db.commit()
                 db.close()
-        nqueued = utils.getqueue(config.machine)
+        nqueued = utils.getqueue(config.machine,queue)
             
     else:
         print("Nothing to submit.  Sleeping...")

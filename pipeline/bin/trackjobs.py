@@ -3,8 +3,8 @@ import os, time, utils, config, PBSQuery
 import database as DB
 
 print("Starting GBNCC job tracker...")
+queue = PBSQuery.PBSQuery()
 while True:
-    queue = PBSQuery.PBSQuery()
     db    = DB.Database("observations")
     query = "SELECT ID,ProcessingID,FileName FROM GBNCC WHERE (ProcessingStatus='p' OR ProcessingStatus='i') AND ProcessingSite='%s'"%config.machine
     db.execute(query)
@@ -20,7 +20,7 @@ while True:
                 status = utils.results_status(outdir, basenm)
                 print("Job %s completed with status %s"%(jobid,status))
                 query = "UPDATE GBNCC SET ProcessingStatus='%s' "\
-                        "WHERE ProcessingID=%i"%(status,jobid)
+                        "WHERE ProcessingID='%s'"%(status,jobid)
                 db.execute(query)
                 
             else: pass

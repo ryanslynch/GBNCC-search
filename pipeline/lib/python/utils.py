@@ -1,8 +1,8 @@
 import os, glob, config, PBSQuery
 from subprocess import Popen, PIPE
 
-def getqueue(machine):
-    queue = PBSQuery.PBSQuery()
+def getqueue(machine,queue):
+    #queue = PBSQuery.PBSQuery()
     if machine == "guillimin":
         alljobs = queue.getjobs()
         if alljobs is not None:

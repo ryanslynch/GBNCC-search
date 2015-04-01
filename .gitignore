@@ -3,5 +3,12 @@ logs
 old
 results
 pipeline/lib/python-2.6.8-packages-GBNCC.tar.gz
+pipeline/lib/python/configure.py
 config-secure.py
 config-use.py
+pipeline/bin/*.pyc
+pipeline/lib/python/*.pyc
+submitlog.tmp
+submit_output
+supervisord.conf
+supervisord.log

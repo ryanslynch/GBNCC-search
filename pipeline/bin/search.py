@@ -277,6 +277,10 @@ def remove_crosslist_duplicate_candidates(candlist1,candlist2):
 def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     # Change to the specified working directory
     os.chdir(workdir)
+    # Set up theano compile dir (UBC_AI rating uses theano)
+    theano_compiledir = os.path.join(workdir, "theano_compile")
+    os.mkdir(theano_compiledir)
+    os.putenv("THEANO_FLAGS", "compiledir=%s"%theano_compiledir)
 
     # Get information on the observation and the job
     job = obs_info(fits_filenm)
@@ -548,13 +552,10 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
         if cands_folded == max_hi_cands_to_fold:
             break
         elif cand.sigma > to_prepfold_sigma:
-            job.folding_time += timed_execute(get_folding_command(cand, job, ddplans))
+            job.folding_time += timed_execute(get_folding_command(cand, job, ddplans, maskfilenm))
             cands_folded += 1
 
     # Rate the candidates
-    #theano_compiledir = os.path.join(tmpdir, "theano_compile")
-    #os.mkdir(theano_compiledir)
-    #os.putenv("THEANO_FLAGS", "compiledir=%s"%theano_compiledir)
     pfdfiles = glob.glob("*.pfd")
     for pfdfile in pfdfiles:
         status = ratings.rate_candidate(pfdfile)
