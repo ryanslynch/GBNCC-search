@@ -663,8 +663,8 @@ def Known_RFI_Freq_Diff(pfd):
     name1 = "Known_RFI_Freq_Diff"
 
     # An array of known RFI frequencies
-    rfi_fs = N.array([20,30,60,90,120,180,240,300,360,420,480,540,600],
-                     dtype=N.float)
+    rfi_fs = N.array([.13,.26,.5,.9,1,1.8,2.06,2.1,2.7,3,3.6,4.15,4.7,5.7,6,6.2,6.8,7.3,8.4,8.9,9,9.4,10,11,12,15,17,18,20,23,29,30,40,60,80,90,100,120,180,200,240,300,360,400,420,480,540,600,700,800,900,1000,1100,1220,1300,1350,1400,1500,1700,1800,1900],
+                     dtype=np.float)
 
     # Get the topocentric period if available, otherwise use the barycentric
     # period
