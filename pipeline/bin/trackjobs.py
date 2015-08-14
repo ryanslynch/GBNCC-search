@@ -20,7 +20,7 @@ while True:
                 status = utils.results_status(outdir, basenm)
                 print("Job %s completed with status %s"%(jobid,status))
                 query = "UPDATE GBNCC SET ProcessingStatus='%s' "\
-                        "WHERE ProcessingID='%s'"%(status,jobid)
+                        "WHERE ID=%i"%(status,ID)
                 db.execute(query)
                 
             else: pass

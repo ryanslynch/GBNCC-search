@@ -124,10 +124,10 @@ def get_folding_command(cand, obs, ddplans, maskfilenm):
         otheropts = "-npart 40 -pstep 1 -pdstep 2 -dmstep 3"
     elif p < 0.5:
         Mp, Mdm, N = 1, 1, 100
-        otheropts = "-npart 30 -pstep 1 -pdstep 2 -dmstep 1"
+        otheropts = "-npart 30 -nodmsearch -pstep 1 -pdstep 2 -dmstep 1"
     else:
         Mp, Mdm, N = 1, 1, 200
-        otheropts = "-npart 30 -nopdsearch -pstep 1 -pdstep 2 -dmstep 1"
+        otheropts = "-npart 30 -nodmsearch -nopdsearch -pstep 1 -pdstep 2 -dmstep 1"
     return "prepfold -noxwin -nsub 128 -accelcand %d -accelfile %s.cand -dm %.2f -o %s %s -n %d -npfact %d -ndmfact %d -mask %s %s" % \
            (cand.candnum, cand.filename, cand.DM, outfilenm,
             otheropts, N, Mp, Mdm, maskfilenm, fitsfile)

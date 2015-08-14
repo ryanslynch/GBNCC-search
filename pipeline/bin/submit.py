@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import os, shutil, glob, time, datetime, pytz, config, utils, database, PBSQuery
+import os, subprocess, shutil, glob, time, datetime, pytz, config, utils, database, PBSQuery
+prestodir = os.environ["PRESTO"]
 
 #checkpoints = glob.glob(os.path.join(config.jobsdir, "*.checkpoint"))
 checkpoints = []
@@ -76,12 +77,13 @@ while True:
                                               email=config.email))
         subfile.close()
         jobid,msg = utils.subjob(config.machine,subfilenm,options="-o {0} -e {0}".format(config.logsdir))
-        jobid = jobid.strip()
         if jobid is None: 
             print("ERROR: %s: %s"%(jobnm,msg))
         
         else:
-            print("Submitted %s"%jobnm)
+            prestoversion = subprocess.Popen("cd %s ; git rev-parse HEAD 2> /dev/null"%prestodir,shell=True,stdout=subprocess.PIPE).stdout.readline().strip()
+            jobid = jobid.strip()
+            print("Submitted %s with ID %s"%(jobnm,jobid))
             time.sleep(30)
             alljobs = queue.getjobs()
             if alljobs is not None:
@@ -100,12 +102,14 @@ while True:
                         "ProcessingID='{jobid}',ProcessingSite='{site}',"\
                         "ProcessingAttempts=ProcessingAttempts+1,"\
                         "ProcessingDate='{date}',"\
-                        "PipelineVersion='{version}' "\
+                        "PipelineVersion='{version}', "\
+                        "PRESTOVersion='{prestoversion}' "\
                         "WHERE FileName='{filenm}'".format(status=status,
                                                            jobid=jobid,
                                                            site=config.machine,
                                                            date=date.isoformat(),
                                                            version=config.version,
+                                                           prestoversion=prestoversion,
                                                            filenm=os.path.basename(filenm))
                 
                 db = database.Database("observations")
