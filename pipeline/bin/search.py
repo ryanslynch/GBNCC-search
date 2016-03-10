@@ -568,8 +568,11 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     psfiles = glob.glob("*.ps")
     for psfile in psfiles:
         if "singlepulse" in psfile:
-	    pngfile = psfile.replace(".ps", ".png")
+            pngfile = psfile.replace(".ps", ".png")
             subprocess.call(["convert", psfile, pngfile])
+        elif "grouped" in psfile:
+            pngfile = psfile.replace(".ps", ".png")
+            subprocess.call(["convert", psfile, pngfile])              
         else:
             pngfile = psfile.replace(".ps", ".png")
             subprocess.call(["convert", "-rotate", "90", psfile, pngfile])
