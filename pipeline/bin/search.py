@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #import analyse_sp
-import Group_sp_events
+#import Group_sp_events
 import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
 import argparse, numpy, pyfits, presto, sifting, psr_utils
 import ratings, diagnostics, config
@@ -491,17 +491,13 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
         except: pass
     
     # Chen Karako-Argaman's single pulse rating algorithm
-    # DISABLED DUE TO EXCESSIVE MEMORY USAGE
-    #if job.masked_fraction < 0.2:
-    #    analyse_sp.main()
-    Group_sp_events.main()
-    cmd = 'sp_pipeline.py --infile %s_rfifind.inf --groupsfile groups.txt %s.fits %s*.singlepulse' % \
-           (basenm,basenm,basenm)
-     job.singlepulse_time += timed_execute(cmd)
-    #else:
-    #    spoutfile = open('groups.txt', 'w')
-    #    spoutfile.write('# Beam skipped because of high RFI\n.')
-    #    spoutfile.close()
+    if job.masked_fraction < 0.2:
+        cmd = 'Group_sp_events.py %s*.singlepulse' %(job.basefilenm)
+        job.singlepulse_time += timed_execute(cmd)
+    else:
+        spoutfile = open('groups.txt', 'w')
+        spoutfile.write('# Beam skipped because of high RFI\n.')
+        spoutfile.close()
 
     # Sift through the candidates to choose the best to fold
     
