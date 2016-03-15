@@ -705,7 +705,7 @@ def main():
     print_debug("Number of groups (after initial grouping): %d " % len(groups))
     print_debug("Finished grouping_sp_dmt, beginning flag_noise... " + 
                 strftime("%Y-%m-%d %H:%M:%S"))
-    flag_noise(groups) # do an initial coarse noise flagging and removal
+    flag_noise(groups,10) # do an initial coarse noise flagging and removal
     pop_by_rank(groups, 1)
     print_debug("Number of groups (after removed noise gps w <10 sps): %d " % len(groups))
     print_debug("Beginning grouping_sp_t... " +
