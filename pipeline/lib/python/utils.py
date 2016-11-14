@@ -57,3 +57,12 @@ def get_size(path):
     return size
 
 
+class RatingError(Exception):
+    pass
+
+class RatingWarning(Warning):
+    pass
+
+class RaterLoadWarning(RatingWarning):
+    pass
+

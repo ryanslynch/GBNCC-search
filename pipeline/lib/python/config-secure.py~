@@ -28,7 +28,7 @@ basetmpdir  = "/localscratch"
 # Directory where pipeline scripts are stored
 pipelinedir = os.path.join(topdir, "pipeline")
 # Directory where raw data files are stored before being processed
-datadir     = "/gs/scratch/rlynch"
+datadir     = "/gs/scratch/rlynch/GBNCC"
 # Directory where job submission files are stored
 jobsdir     = os.path.join(topdir, "jobs")
 # Directory wehre log files are stored
@@ -42,10 +42,10 @@ version     = subprocess.Popen("cd %s ; git rev-parse HEAD 2> /dev/null"%pipelin
 # Databases dictionary
 DATABASES = {
     "observations" : {
-    "dbnm"   : "GBTDataDB",
-    "hostnm" : "pulsar.physics.mcgill.ca",
-    "usernm" : "gbtpsr",
-    "passwd" : "NRAO100-m",
+    "dbnm"   : "CONTACT RYAN FOR DB NAME",
+    "hostnm" : "CONTACT RYAN FOR HOST NAME",
+    "usernm" : "CONTACT RYAN FOR USERNAME",
+    "passwd" : "CONTACT RYAN FOR PASSWORD",
         },
     }
 
@@ -61,7 +61,7 @@ subscripts = {"guillimin":
 #PBS -q sw
 #PBS -l nodes={nodenm}:ppn=1
 #PBS -l walltime={walltimelim}
-#PBS -A bgf-180-ae
+#PBS -A bgf-180-ad
 
 if [ {nodenm} == 1 ]
   then
