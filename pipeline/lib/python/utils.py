@@ -57,6 +57,28 @@ def get_size(path):
     return size
 
 
+def print_sp_raters_list(verbosity=0):
+    """Print the list of imported single pulse raters to stdout.
+        
+        Input:
+            verbosity: If True, print description of raters.
+                (Default: Don't be verbose.)
+        Outputs:
+            None
+    """
+    import textwrap
+    import sp_raters
+    print "Number of single pulse raters registered: %d" % len(sp_raters.registered_raters)
+    for rater_name in sp_raters.registered_raters:
+        rater_module = getattr(sp_raters, rater_name)
+        rater = rater_module.Rater()
+        print "'%s': %s (v%d)" % (rater_name, rater.long_name, rater.version)
+        if verbosity:
+            print ""
+            for line in rater.description.split('\n'):
+                print textwrap.fill(line, width=70)
+            print "-"*25
+
 class RatingError(Exception):
     pass
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, subprocess, shutil, glob, time, datetime, pytz, config, utils, database, PBSQuery
+import os, subprocess, shutil, glob, time, datetime, pytz, config, utils, database, PBSQuery, time
 prestodir = os.environ["PRESTO"]
 
 #checkpoints = glob.glob(os.path.join(config.jobsdir, "*.checkpoint"))
@@ -87,6 +87,8 @@ while True:
             time.sleep(30)
             alljobs = queue.getjobs()
             if alljobs is not None:
+                while not alljobs.has_key(jobid):
+                    time.sleep(5)
                 if alljobs[jobid]["job_state"][0] == "Q":
                     status = "i"
                 else:
