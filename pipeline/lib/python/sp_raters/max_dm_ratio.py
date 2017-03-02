@@ -57,6 +57,6 @@ class MaxDMRatioRater(base.BaseRater):
         grid_distance, index = \
           self.search_tree.query([cl, cb], distance_upper_bound=1)
 
-        return dm / self.max_DM[index]
+        return dm / self.max_DM[index-1]
 
 Rater = MaxDMRatioRater
