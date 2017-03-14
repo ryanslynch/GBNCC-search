@@ -5,12 +5,13 @@ import presto
 
 import base
 from sp_rating_classes import profile
-from ratings2 import config
+#from ratings2 import config
 
 #### setup UBC AI
 from ubc_AI.data import pfdreader
 import cPickle
-clfer = config.spd_classifier
+#clfer = config.spd_classifier
+clfer = "clfsvm_SP_v2.pkl"
 classifier = cPickle.load(open(clfer, 'rb'))
 ####
 
