@@ -4,6 +4,7 @@
 import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
 import argparse, numpy, pyfits, presto, sifting, psr_utils
 import ratings, diagnostics, config
+import singlepulse.GBNCC_wrapper_make_spd as GBNCC_wrapper_make_spd
 
 checkpointdir = config.jobsdir
 basetmpdir    = config.basetmpdir
@@ -490,10 +491,14 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                       job.basefilenm+"_DMs%s_singlepulse.ps"%dmrangestr)
         except: pass
     
-    # Chen Karako-Argaman's single pulse rating algorithm
-    if job.masked_fraction < 0.2:
-        cmd = 'Group_sp_events.py %s*.singlepulse' %(job.basefilenm)
-        job.singlepulse_time += timed_execute(cmd)
+    # Chen Karako-Argaman's single pulse rating algorithm and Chitrang Patel's single pulse waterfaller code
+    mem = int(subprocess.check_output("du -chm *singlepulse | tail -n 1 | cut -d't' -f 1", stderr=subprocess.STDOUT, shell=True))
+    if mem < 600: 
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path[:-3] + 'lib/python/singlepulse/'  
+        cmd = 'python ' + path + 'rrattrap.py --inffile %s*rfifind.inf --use-configfile --use-DMplan --vary-group-size %s*.singlepulse'%(job.basefilenm, job.basefilenm)
+        job.singlepulse_time += timed_execute(cmd) 
+        GBNCC_wrapper_make_spd.GBNCC_wrapper('groups.txt', maskfilenm, job.fits_filenm, workdir)
     else:
         spoutfile = open('groups.txt', 'w')
         spoutfile.write('# Beam skipped because of high RFI\n.')
@@ -575,7 +580,10 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
             subprocess.call(["convert", psfile, pngfile])
         elif "grouped" in psfile:
             pngfile = psfile.replace(".ps", ".png")
-            subprocess.call(["convert", psfile, pngfile])              
+            subprocess.call(["convert", psfile, pngfile])    
+        elif "spd" in psfile:
+            pngfile = psfile.replace(".ps", ".png")
+            subprocess.call(["convert", psfile, pngfile])           
         else:
             pngfile = psfile.replace(".ps", ".png")
             subprocess.call(["convert", "-rotate", "90", psfile, pngfile])
@@ -589,7 +597,8 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                     "_singlepulse.tgz",
                     "_inf.tgz",
                     "_pfd.tgz",
-                    "_bestprof.tgz"]
+                    "_bestprof.tgz",
+                    "_spd.tgz"]
     tar_globs = ["*_ACCEL_%d"%lo_accel_zmax,
                  "*_ACCEL_%d"%hi_accel_zmax,
                  "*_ACCEL_%d.cand"%lo_accel_zmax,
@@ -597,7 +606,8 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                  "*.singlepulse",
                  "*_DM[0-9]*.inf",
                  "*.pfd",
-                 "*.bestprof"]
+                 "*.bestprof",
+                 "*.spd"]
     for (tar_suffix, tar_glob) in zip(tar_suffixes, tar_globs):
         tf = tarfile.open(job.basefilenm+tar_suffix, "w:gz")
         for infile in glob.glob(tar_glob):
@@ -609,6 +619,11 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     filfiles = glob.glob("*_DS?.fil") + glob.glob("*_DS??.fil")
     for filfile in filfiles:
         os.remove(filfile)
+
+    #Remove all subbanded fits files 
+    subfiles = glob.glob("*subband*.fits")
+    for subfile in subfiles:
+        os.remove(subfile)
 
     # And finish up
     job.total_time = time.time() - job.total_time

@@ -140,7 +140,10 @@ class spd:
         self.sweep_duration = float(ll[22])
         self.sweep_start_time = float(ll[23])
         self.bary_pulse_peak_time = float(ll[24])
-        self.man_params = ll[25]
+        try:
+            self.man_params = ll[25]
+        except:
+            self.man_params = None
 
         #self.spfiles = dd['singlepulse_files']
         if not self.man_params:

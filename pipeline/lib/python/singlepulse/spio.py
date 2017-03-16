@@ -79,7 +79,7 @@ def read_RRATrap_info(groupfile, group_to_read, rank):
         print "Making arrays for DM vs Signal to Noise..."
         temp_list = files[group_to_read-6].split()
         npulses = int(temp_list[2])
-        temp_lines = files[(group_to_read+3):(group_to_read+npulses+1)]
+        temp_lines = files[(group_to_read+1):(group_to_read+npulses+1)]
         arr = _np.split(temp_lines, len(temp_lines))
         dm_list = []
         time_list = []

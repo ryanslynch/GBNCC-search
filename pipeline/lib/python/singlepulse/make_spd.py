@@ -15,12 +15,11 @@ import sys
 import copy
 from time import strftime
 from subprocess import Popen, PIPE
-
 import numpy as np
 import optparse
 import waterfaller
 import psr_utils
-import plot_spd
+import singlepulse.plot_spd as plot_spd
 import singlepulse.spcand as spcand
 import singlepulse.spio as spio
 import psrfits
@@ -145,7 +144,6 @@ def make_spd_from_file(spdcand, rawdatafile, \
                                        spdcand.width_bins, spdcand.pulse_width, rawdatafile.tsamp,\
                                        rawdatafile.specinfo.T, spdcand.topo_start_time, data.starttime, \
                                        data.dt,data.numspectra, data.freqs.min(), data.freqs.max()])
-
                 #### Array for plotting Dedispersed waterfall plot zerodm - ON
                 print_debug("Running Waterfaller with Zero-DM ON...")
                 zerodm=True
@@ -221,7 +219,7 @@ def make_spd_from_file(spdcand, rawdatafile, \
 
         print_debug("Finished group %i... "%rank+strftime("%Y-%m-%d %H:%M:%S"))
     print_debug("Finished running waterfaller... "+strftime("%Y-%m-%d %H:%M:%S"))
-        
+
 def make_spd_from_man_params(spdcand, rawdatafile, \
                              txtfile, maskfile, \
                              plot, just_waterfall, \
@@ -276,7 +274,6 @@ def make_spd_from_man_params(spdcand, rawdatafile, \
     rank = None
     if not nsub:
         nsub = rawdatafile.nchan
-
     # Array for Plotting Dedispersed waterfall plot - zerodm - OFF
     spdcand.manual_params(subdm, dm, sweep_dm, sigma, start_time, \
                          width_bins, downsamp, duration, nbins, nsub, rawdatafile.tsamp, \
@@ -303,10 +300,14 @@ def make_spd_from_man_params(spdcand, rawdatafile, \
                            rawdatafile.tsamp, rawdatafile.specinfo.T, spdcand.topo_start_time, \
                            data.starttime, data.dt,data.numspectra, data.freqs.min(), \
                            data.freqs.max()])
-
     #### Array for plotting Dedispersed waterfall plot zerodm - ON
     print_debug("Running Waterfaller with Zero-DM ON...")
     zerodm=True
+    #########################################
+    #Modification by Pragya to scale indep one of the two dedispersed pulse plots for GBNCC
+    if rawdatafile.specinfo.telescope == 'GBT':
+        spdcand.scaleindep = scaleindep
+    #########################################
     data, Data_dedisp_zerodm = waterfall_array(rawdatafile, spdcand.start, \
                                  spdcand.duration, spdcand.dm, spdcand.nbins, spdcand.nsub, \
                                  spdcand.subdm, zerodm, spdcand.downsamp, \
@@ -317,7 +318,7 @@ def make_spd_from_man_params(spdcand, rawdatafile, \
                           width_bins, downsamp, duration, nbins, nsub, rawdatafile.tsamp, \
                           rawdatafile.specinfo.N, \
                           rawdatafile.frequencies[0], rawdatafile.frequencies[-1], rawdatafile, \
-                          loc_pulse=loc_pulse, dedisp=None, scaleindep=None, zerodm=None, mask=mask, \
+                          loc_pulse=loc_pulse, dedisp=None, scaleindep=scaleindep, zerodm=None, mask=mask, \
                           barytime=barytime, bandpass_corr=bandpass_corr)
     data, Data_nozerodm = waterfall_array(rawdatafile, spdcand.start, \
                                  spdcand.duration, spdcand.dm, spdcand.nbins, spdcand.nsub, \
@@ -411,7 +412,7 @@ def main():
                                  options.integrate_ts, options.integrate_spec, options.disp_pulse, \
                                  basename, \
                                  options.mask, options.bandpass_corr, options.barytime, \
-                                 options.man_params)            
+                                 options.man_params)           
 
 if __name__=='__main__':
     parser = optparse.OptionParser(prog="sp_pipeline..py", \

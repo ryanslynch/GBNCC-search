@@ -2,8 +2,8 @@
 from scipy.special import erf
 import numpy as np
 
-#tel = 'GBNCC'
-tel = 'PALFA'
+tel = 'GBNCC'
+#tel = 'PALFA'
 
 CLOSE_DM = 2 # pc cm-3
 # MIN_GROUP, DM_THRESH, TIME_THRESH will change later on depending on the DDplan.
@@ -21,14 +21,16 @@ if tel == 'GBNCC':
     low_DM = np.array([0.0,70.52,125.56,217.36,390.76,778.36,1882.36])
     DM_THRESH = 0.05
     ####factors that mutliply DM_THRESH and TIME_THRESH 
-    dm_fac_arr = np.array([1,2,4,8,16,32,64])
+    dm_fac_arr = np.array([1,2,3,5,10,30,50])
     t_fac_arr = np.array([1,1,1,2,4,6,8])
-
 elif tel == 'PALFA':
     DM_step = np.array([0.1,0.3,0.3,0.5,0.5,1.0,2.0,3.0,5.0])
     low_DM = np.array([0.0,212.8,443.2,534.4,876.4,990.4,1826.4,3266.4,5546.4])
     DM_THRESH = 0.5
     ####factors that mutliply DM_THRESH and TIME_THRESH
+    ####To search 5 neighbouring DM trials#####
+    #dm_fac_arr = np.array([1,3,3,5,5,10,20,30,50]) 
+    ####To search 5 neighbouring DM trials at low DMs and 3 DM trials for pulses with DM > 3266####
     dm_fac_arr = np.array([1,3,3,5,5,10,20,18,30])
     t_fac_arr = np.array([1,2,3,5,6,10,10,10,10])          
 
