@@ -220,7 +220,8 @@ def create_groups(sps, inffile, min_nearby=1, time_thresh=0.5, \
             grp = SinglePulseGroup(*sps[ii])
             groups.append(grp)
         else:
-            if sps[ii]['sigma'] > 10 and sps[ii]['downfact'] < 3 and sps[ii]['dm'] > 534.4: #FIXME: Specific for PALFA
+            #Modification to allow forming a group from a single pulse (Pragya Chawla, Feb 2017)
+            if sps[ii]['sigma'] > 10 and sps[ii]['downfact'] < 2 and sps[ii]['dm'] > 778.36: #FIXME: Specific for GBNCC
                 grp = SinglePulseGroup(*sps[ii])
                 grp.rank = 7
                 groups.append(grp)
@@ -327,15 +328,15 @@ def flag_noise(groups, inffile, dt, chan_width, BW_MHz, use_dmplan=False, vary_g
         min_group = group_size(inffile, dt, chan_width, BW_MHz, grp.max_sigma, duration_C, opt_DM, vary_group_size, min_group)
         if grp.numpulses < min_group and grp.rank != 7:
             grp.rank = 1
-        ####FIXME: Specific to PALFA
+        ####FIXME: Specific to GBNCC
         if max(min_group,grp.numpulses) < 20 and grp.max_sigma > 10: 
-            if opt_DM > 5546.4 and duration_C < 10e-3:
+            if opt_DM > 1882.36 and duration_C < 13e-3:
                grp.rank = 7
-            elif 1826.4 < opt_DM < 5546.4 and duration_C < 5e-3:
+            elif 778.36 < opt_DM < 1882.36 and duration_C < 9e-3:
                grp.rank = 7
-            elif 990.4 < opt_DM < 1826.4 and duration_C < 3e-3:
+            elif 390.76 < opt_DM < 778.36 and duration_C < 3e-3:
                grp.rank = 7
-            elif 534.4 < opt_DM < 990.4 and duration_C < 2e-3:
+            elif 217.36 < opt_DM < 390.76 and duration_C < 1.5e-3:
                grp.rank = 7
     return groups
 ###################
@@ -689,13 +690,12 @@ def main():
                          usage="%prog --inffile <.inf file> [options] *.singlepulse",\
                          description="Group single pulse events and rank them based on the sigma behavior. \
                                        Plot DM vs time with different colours for different ranks as follows:\
-                                       \t\tRank 1 (Other)          : Grey\
-                                       \t\tRank 2 (RFI)            : Red\
-                                       \t\tRank 3 (ok)             : Cyan\
-                                       \t\tRank 4 (good)           : dim blue\
-                                       \t\tRank 5 (very good)      : dark blue\
-                                       \t\tRank 6 (excellent)      : Magenta\
-                                       \t\tRank 7 (narrow pulses)  : Green")
+                                       \t\tRank 1 (Other)      : Grey\
+                                       \t\tRank 2 (RFI)        : Red\
+                                       \t\tRank 3 (ok)         : Cyan\
+                                       \t\tRank 4 (good)       : dim blue\
+                                       \t\tRank 5 (very good)  : dark blue\
+                                       \t\tRank 6 (excellent)  : Magenta")
 
     parser.add_option('--CLOSE-DM', dest='close_dm', type='float', \
                         help="DM to below which the signalis considered RFI(Default: 2", \
@@ -753,6 +753,8 @@ def main():
         raise ValueError("Cannot recognize file type from extension. "
                          " Only '.inf' types are supported.")
     
+    if options.use_DMplan or options.use_configfile or options.vary_group_size:
+        import rrattrap_config
 
     RANKS = np.asarray([2,0,3,4,5,6,7])
     
@@ -786,7 +788,7 @@ def main():
                 strftime("%Y-%m-%d %H:%M:%S"))
     print_debug("Number of single pulse events: %d " % len(groups))
     
-    groups = create_groups(groups, inffile, min_nearby=1, ignore_obs_end=10, time_thresh=TIME_THRESH, dm_thresh=DM_THRESH, use_dmplan=options.use_DMplan) # ignore the last 10 seconds of the obs, for palfa
+    groups = create_groups(groups, inffile, min_nearby=1, ignore_obs_end=0, time_thresh=TIME_THRESH, dm_thresh=DM_THRESH, use_dmplan=options.use_DMplan) # ignore the last 10 seconds of the obs, for palfa
     print_debug("Number of groups: %d " % len(groups))
     print_debug("Finished create_groups, beginning grouping_sp_dmt... " +
                     strftime("%Y-%m-%d %H:%M:%S"))
@@ -875,10 +877,10 @@ def main():
             print_debug("Finished PGplotting DMs20-110 "+strftime("%Y-%m-%d %H:%M:%S"))
             plot_sp_rated_pgplot(groups, ranks, inffile, 100, 310)
             print_debug("Finished PGplotting DMs100-310 "+strftime("%Y-%m-%d %H:%M:%S"))
-            plot_sp_rated_pgplot(groups, ranks, inffile, 300, 1000)
-            print_debug("Finished PGplotting DMs100-310 "+strftime("%Y-%m-%d %H:%M:%S"))
-            plot_sp_rated_pgplot(groups, ranks, inffile, 1000, 10000)
-            print_debug("Finished PGplotting DMs100-310 "+strftime("%Y-%m-%d %H:%M:%S"))
+            plot_sp_rated_pgplot(groups, ranks, inffile, 300, 1100)
+            print_debug("Finished PGplotting DMs300-1100 "+strftime("%Y-%m-%d %H:%M:%S"))
+            plot_sp_rated_pgplot(groups, ranks, inffile, 1000, 3100)
+            print_debug("Finished PGplotting DMs1000-3100 "+strftime("%Y-%m-%d %H:%M:%S"))
         elif PLOTTYPE.lower() == 'matplotlib':
             # Use matplotlib to plot
             plot_sp_rated_all(groups, ranks, inffile, 0, 30)
@@ -887,10 +889,10 @@ def main():
             print_debug("Finished plotting DMs20-110 "+strftime("%Y-%m-%d %H:%M:%S"))
             plot_sp_rated_all(groups, ranks, inffile, 100, 310)
             print_debug("Finished plotting DMs100-310 "+strftime("%Y-%m-%d %H:%M:%S"))
-            plot_sp_rated_all(groups, ranks, inffile, 300, 1000)
-            print_debug("Finished plotting DMs300-1000 "+strftime("%Y-%m-%d %H:%M:%S"))
-            plot_sp_rated_all(groups, ranks, inffile, 1000, 10000)
-            print_debug("Finished plotting DMs1000-10000 "+strftime("%Y-%m-%d %H:%M:%S"))
+            plot_sp_rated_all(groups, ranks, inffile, 300, 1100)
+            print_debug("Finished plotting DMs300-1100 "+strftime("%Y-%m-%d %H:%M:%S"))
+            plot_sp_rated_all(groups, ranks, inffile, 1000, 3100)
+            print_debug("Finished plotting DMs1000-3100 "+strftime("%Y-%m-%d %H:%M:%S"))
         else:
             print "Plot type must be one of 'matplotlib' or 'pgplot'. Not plotting."
 

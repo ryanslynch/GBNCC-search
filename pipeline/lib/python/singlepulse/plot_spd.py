@@ -73,10 +73,11 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
     tsamp = spdobj.tsamp
     Total_observed_time = spdobj.total_obs_time
     topo_start = spdobj.pulse_peak_time
-    start = topo_start - loc_pulse*duration
     datastart = spdobj.waterfall_start_time
     datasamp = spdobj.waterfall_tsamp
+    #datanumspectra = spdobj.waterfall_prededisp_nbins
     datanumspectra = spdobj.waterfall_nbins
+    start = topo_start - loc_pulse*duration
     min_freq = spdobj.min_freq
     max_freq = spdobj.max_freq
     sweep_duration = spdobj.sweep_duration
@@ -120,7 +121,7 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         times = np.arange(int((datastart-start)/datasamp),int((datastart-start)/datasamp)+datanumspectra)*datasamp
         if integrate_ts: 
             sp_pgplot.ppgplot.pgsvp(0.07, 0.40, 0.80, 0.90)
-            sp_pgplot.ppgplot.pgswin(datastart - start, datastart-start+duration, np.min(Dedisp_ts), 1.05*np.max(Dedisp_ts))
+            sp_pgplot.ppgplot.pgswin(datastart-start, datastart-start+datanumspectra*datasamp, np.min(Dedisp_ts), 1.05*np.max(Dedisp_ts))
             sp_pgplot.ppgplot.pgsch(0.8)
             sp_pgplot.ppgplot.pgslw(3)
             sp_pgplot.ppgplot.pgbox("BC", 0, 0, "BC", 0, 0)
@@ -172,9 +173,10 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         #### Plot Dedispersed Time series - Zerodm filter - On
         dedisp_ts = array[::-1].sum(axis = 0)
         times = np.arange(int((datastart-start)/datasamp),int((datastart-start)/datasamp)+datanumspectra)*datasamp
+        #times = np.arange(datanumspectra)*datasamp
         if integrate_ts:
             sp_pgplot.ppgplot.pgsvp(0.07, 0.40, 0.40, 0.50)
-            sp_pgplot.ppgplot.pgswin(datastart - start, datastart-start+duration, np.min(dedisp_ts), 1.05*np.max(dedisp_ts))
+            sp_pgplot.ppgplot.pgswin(datastart - start, datastart-start+datanumspectra*datasamp, np.min(dedisp_ts), 1.05*np.max(dedisp_ts))
             sp_pgplot.ppgplot.pgsch(0.8)
             sp_pgplot.ppgplot.pgslw(3)
             sp_pgplot.ppgplot.pgbox("BC", 0, 0, "BC", 0, 0)
@@ -342,9 +344,10 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         #### Plot Dedispersed Time series - Zerodm filter - Off
         Dedisp_ts = array[::-1].sum(axis = 0)
         times = np.arange(int((datastart-start)/datasamp),int((datastart-start)/datasamp)+datanumspectra)*datasamp
+        #times = np.arange(datanumspectra)*datasamp
         if integrate_ts:
             sp_pgplot.ppgplot.pgsvp(0.1, 0.70, 0.75, 0.83)
-            sp_pgplot.ppgplot.pgswin(datastart - start, datastart-start+duration, np.min(Dedisp_ts), 1.05*np.max(Dedisp_ts))
+            sp_pgplot.ppgplot.pgswin(datastart - start, datastart-start+datanumspectra*datasamp, np.min(Dedisp_ts), 1.05*np.max(Dedisp_ts))
             sp_pgplot.ppgplot.pgsch(0.8)
             sp_pgplot.ppgplot.pgslw(3)
             sp_pgplot.ppgplot.pgbox("BC", 0, 0, "BC", 0, 0)
@@ -394,10 +397,11 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         
         #### Plot Dedispersed Time series - Zerodm filter - On
         dedisp_ts = array[::-1].sum(axis = 0)
+        #times = np.arange(datanumspectra)*datasamp
         times = np.arange(int((datastart-start)/datasamp),int((datastart-start)/datasamp)+datanumspectra)*datasamp
         if integrate_ts:
             sp_pgplot.ppgplot.pgsvp(0.1, 0.7, 0.36, 0.44)
-            sp_pgplot.ppgplot.pgswin(datastart - start, datastart-start+duration, np.min(dedisp_ts), 1.05*np.max(dedisp_ts))
+            sp_pgplot.ppgplot.pgswin(datastart - start, datastart-start+datanumspectra*datasamp, np.min(dedisp_ts), 1.05*np.max(dedisp_ts))
             sp_pgplot.ppgplot.pgsch(0.8)
             sp_pgplot.ppgplot.pgslw(3)
             sp_pgplot.ppgplot.pgbox("BC", 0, 0, "BC", 0, 0)
