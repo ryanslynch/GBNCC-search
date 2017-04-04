@@ -87,16 +87,25 @@ while True:
             time.sleep(30)
             alljobs = queue.getjobs()
             if alljobs is not None:
-                if alljobs[jobid]["job_state"][0] == "Q":
-                    status = "i"
-                else:
-                    status = "p"
-                    nodenm = alljobs[jobid]["exec_host"][0]
-                    checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
-                    with open(checkpoint, "w") as f:
-                        f.write(nodenm+"\n")
-                        f.write("0 0\n")
-
+                ntries = 0
+                success = False
+                while not success and ntries < 2:
+                    if alljobs.has_key(jobid):
+                        success = True
+                        if alljobs[jobid]["job_state"][0] == "Q":
+                            status = "i"
+                        else:
+                            status = "p"
+                            nodenm = alljobs[jobid]["exec_host"][0]
+                            checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
+                            #with open(checkpoint, "w") as f:
+                            #    f.write(nodenm+"\n")
+                            #    f.write("0 0\n")
+                    elif ntries < 2:
+                        ntries += 1
+                        alljobs = queue.getjobs()
+                    else:
+                        status = "f"
                 date = datetime.datetime.now()
                 query = "UPDATE GBNCC SET ProcessingStatus='{status}',"\
                         "ProcessingID='{jobid}',ProcessingSite='{site}',"\

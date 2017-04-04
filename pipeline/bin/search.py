@@ -2,7 +2,8 @@
 #import analyse_sp
 #import Group_sp_events
 import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
-import argparse, numpy, pyfits, presto, sifting, psr_utils
+import argparse, numpy, presto, sifting, psr_utils
+import astropy.io.fits as pyfits
 import ratings, diagnostics, config
 
 checkpointdir = config.jobsdir
