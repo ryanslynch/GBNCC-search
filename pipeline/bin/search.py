@@ -23,7 +23,7 @@ max_lo_cands_to_fold  = 20   # maximum number of lo-accel candidates to fold
 max_hi_cands_to_fold  = 10   # maximum number of hi-accel candidates to fold
 numhits_to_fold       = 2    # number of DMs with a detection needed to fold
 low_DM_cutoff         = 1.0  # lowest DM to consider as a "real" pulsar
-lo_accel_numharm      = 16   # max harmonics
+lo_accel_numharm      = 32   # max harmonics
 lo_accel_sigma        = 2.0  # threshold gaussian significance
 lo_accel_zmax         = 0    # bins
 lo_accel_flo          = 2.0  # Hz
@@ -331,7 +331,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     if not os.path.exists(rfifindout) or not os.path.exists(rfifindmask):
   
         # rfifind the filterbank file
-        cmd = "rfifind -time %.17g -o %s %s > %s_rfifind.out"%\
+        cmd = "rfifind -zapchan 2456:3277 -time %.17g -o %s %s > %s_rfifind.out"%\
               (rfifind_chunk_time, job.basefilenm,
                job.fits_filenm, job.basefilenm)
         job.rfifind_time += timed_execute(cmd)
