@@ -11,7 +11,7 @@ from sp_rating_classes import profile
 from ubc_AI.data import pfdreader
 import cPickle
 #clfer = config.spd_classifier
-clfer = "clfsvm_SP_v2.pkl"
+clfer = "/gs/project/bgf-180-ad/PALFA4/software/ubc_AI/trained_AI/clfsvm_SP_v2.pkl"
 classifier = cPickle.load(open(clfer, 'rb'))
 ####
 
