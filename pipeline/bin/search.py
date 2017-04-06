@@ -2,9 +2,13 @@
 #import analyse_sp
 #import Group_sp_events
 import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
-import argparse, numpy, pyfits, presto, sifting, psr_utils
+import argparse, numpy, presto, sifting, psr_utils
 import ratings, diagnostics, config
 import singlepulse.GBNCC_wrapper_make_spd as GBNCC_wrapper_make_spd
+try:
+    import pyfits
+except ImportError:
+    from astropy.io import fits as pyfits
 
 checkpointdir = config.jobsdir
 basetmpdir    = config.basetmpdir
