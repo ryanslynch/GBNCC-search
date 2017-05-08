@@ -573,8 +573,8 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
             sys.stdout.write("\nWarining: Ratings failed for %s\n"%pfdfile)
             sys.stdout.flush()
     # Rate the single pulse candidates
-    subprocess.call(["rate_spds.py","--redirect-warnings","--include-all",
-                     "*.spd"])
+    cmd = 'rate_spds.py --redirect-warnings --include-all *.spd'
+    subprocess.call(cmd, shell=True)
 
     # Now step through the .ps files and convert them to .png and gzip them
     psfiles = glob.glob("*.ps")
