@@ -279,7 +279,7 @@ def make_spd_from_man_params(spdcand, rawdatafile, \
                          width_bins, downsamp, duration, nbins, nsub, rawdatafile.tsamp, \
                          rawdatafile.specinfo.N, \
                          rawdatafile.frequencies[0], rawdatafile.frequencies[-1], rawdatafile, \
-                         loc_pulse=loc_pulse, dedisp=True, scaleindep=False, zerodm=False, \
+                         loc_pulse=loc_pulse, dedisp=True, scaleindep=scaleindep, zerodm=False, \
                          mask=mask, barytime=barytime, bandpass_corr=bandpass_corr)
     #make an array to store header information for the spd files
     temp_filename = basename+"_DM%.1f_%.1fs"%(spdcand.subdm, spdcand.topo_start_time)
@@ -303,11 +303,6 @@ def make_spd_from_man_params(spdcand, rawdatafile, \
     #### Array for plotting Dedispersed waterfall plot zerodm - ON
     print_debug("Running Waterfaller with Zero-DM ON...")
     zerodm=True
-    #########################################
-    #Modification by Pragya to scale indep one of the two dedispersed pulse plots for GBNCC
-    if rawdatafile.specinfo.telescope == 'GBT':
-        spdcand.scaleindep = scaleindep
-    #########################################
     data, Data_dedisp_zerodm = waterfall_array(rawdatafile, spdcand.start, \
                                  spdcand.duration, spdcand.dm, spdcand.nbins, spdcand.nsub, \
                                  spdcand.subdm, zerodm, spdcand.downsamp, \

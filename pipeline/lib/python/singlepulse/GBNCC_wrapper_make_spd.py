@@ -54,11 +54,20 @@ def pick_rawdatafile(dm, fitsfilenm, freq_lim_1, freq_lim_2, pulse_width, prevDM
         if isfile(subband_file):
             print "Sub-banded file exists at DM of candidate"
         else:
-            mask_subband = rfifind.rfifind("%s_rfifind.mask"%(basenm))
+            mask_subband = rfifind.rfifind("%s_rfifind.mask"%(basenm))  
             mask_subband.set_zap_chans(power=1000,plot=False)  
             mask_subband.set_weights_and_offsets()
             mask_subband.write_weights(filename="%s_weights.txt"%(basenm))
-            cmd = "psrfits_subband -dm %.1f -nsub 128 -o %s_subband_%.1f -weights %s_weights.txt %s"%(dm,basenm,dm,basenm,fitsfilenm)
+            chan, weights = np.loadtxt("%s_weights.txt"%(basenm), unpack = True, skiprows=1, dtype=int)
+            rev_weights = weights[::-1]
+            rev_weights[819:1640] = 0
+            with open('%s_weights.txt'%(basenm), 'r') as f:
+	        header = f.readline()
+            data = np.column_stack([chan,rev_weights])
+            with open('%s_rev_weights.txt'%(basenm), 'w') as f:
+                f.write(header)
+                np.savetxt(f, data, fmt="%d", delimiter="\t")
+            cmd = "psrfits_subband -dm %.1f -nsub 128 -o %s_subband_%.1f -weights %s_rev_weights.txt %s"%(dm,basenm,dm,basenm,fitsfilenm)
             print "executing %s" %cmd
             subprocess.call(cmd, shell=True)
         rawdatafile = subband_file
@@ -130,7 +139,7 @@ def GBNCC_wrapper(txtfile, maskfile, fitsfilenm, path_sp_files):
         
         path = os.path.dirname(os.path.abspath(__file__))
         cmd = "python " + path + "/make_spd.py --use_manual_params --subdm %f --nsub %d" \
-                      " --dm %f -T %f -t %f --width-bins %d --downsamp %d --scaleindep"\
+              	      " --dm %f -T %f -t %f --width-bins %d --downsamp %d --show-spec"\
                       " --noplot --notopo -o %s %s " %(wrapper_cand.subdm, \
                                                  wrapper_cand.nsub, wrapper_cand.dm, \
                                                  wrapper_cand.topo_start_time, wrapper_cand.duration, \
@@ -174,10 +183,10 @@ def GBNCC_wrapper(txtfile, maskfile, fitsfilenm, path_sp_files):
                                         dm_list= map(np.float16, dm_list), \
                                         time_list = map(np.float16, time_list), \
                                         text_array = text_array)
-        plot_spd.plot(temp_filename+".spd", glob.glob(path_sp_files+'/*.singlepulse'), \
+        plot_spd.plot(temp_filename+".spd", glob.glob(path_sp_files+'/*.singlepulse'), maskfile, \
                               outfile=basename, just_waterfall=False, \
-                              integrate_spec=False, integrate_ts=True, \
-                              disp_pulse=False, tar = None)
+                              integrate_spec=True, integrate_ts=True, \
+                              disp_pulse=False, bandpass_corr = True, tar = None)
         numcands+= 1
         print 'Finished sp_candidate : %i'%numcands
         if numcands >= 100:    # Max number of candidates to plot 100.
