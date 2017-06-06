@@ -15,9 +15,10 @@ from subprocess import Popen, PIPE
 import singlepulse.sp_pgplot as sp_pgplot
 import singlepulse.read_spd as read_spd
 import singlepulse.spio as spio
+import rfifind
 
-def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=False, outfile="spdplot", just_waterfall=True, \
-         integrate_spec=True, integrate_ts=True, disp_pulse=True, tar=None):
+def plot(spdfile, singlepulsefiles=None, maskfn = None, spec_width=1.5, loc_pulse=0.5, xwin=False, outfile="spdplot", just_waterfall=True, \
+         integrate_spec=True, integrate_ts=True, disp_pulse=True, bandpass_corr= None, tar=None):
     """
        Generates spd plots which include the following subplots:
            De-dispersed Zero-DM filtered Waterfall plot
@@ -30,7 +31,6 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
            Spectra of the de-dispersed pulse for each of the above waterfalled plots.
            SNR vs DM
            DM vs. Time
-
         Inputs:
            spdfile: A .spd file.
         Optional Inputs:  
@@ -141,11 +141,18 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         if integrate_spec:
             spectrum_window = spec_width*pulse_width
             window_width = int(spectrum_window/datasamp)
-            #burst_bin = int(datanumspectra*loc_pulse/downsamp)
             burst_bin = int(nbins*loc_pulse/downsamp)
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
-            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec)) 
+            if bandpass_corr:
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
+                Dedisp_spec /= bandpass
+                del_percent = 0.10 #remove total 10% of band
+                chans_del = np.ceil(len(Dedisp_spec)*del_percent/2.)
+                Dedisp_spec[-int(chans_del):] = 0
+                Dedisp_spec[:int(chans_del)] = 0
+            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec))
             sp_pgplot.ppgplot.pgsvp(0.4, 0.47, 0.5, 0.8)
             sp_pgplot.ppgplot.pgswin(np.min(Dedisp_spec), 1.05*np.max(Dedisp_spec), min_freq, max_freq)
             sp_pgplot.ppgplot.pgsch(0.8)
@@ -193,11 +200,18 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         if integrate_spec:
             spectrum_window = spec_width*pulse_width
             window_width = int(spectrum_window/datasamp)
-            #burst_bin = int(datanumspectra*loc_pulse/downsamp)
             burst_bin = int(nbins*loc_pulse/downsamp)
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
-            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec)) 
+            if bandpass_corr:
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
+                Dedisp_spec /= bandpass
+                del_percent = 0.10 # total
+                chans_del = np.ceil(len(Dedisp_spec)*del_percent/2.)
+                Dedisp_spec[-int(chans_del):] = 0
+                Dedisp_spec[:int(chans_del)] = 0
+            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec))
             sp_pgplot.ppgplot.pgsvp(0.4, 0.47, 0.1, 0.4)
             sp_pgplot.ppgplot.pgswin(np.min(Dedisp_spec), 1.05*np.max(Dedisp_spec), min_freq, max_freq)
             sp_pgplot.ppgplot.pgsch(0.8)
@@ -366,11 +380,18 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         if integrate_spec:
             spectrum_window = spec_width*pulse_width
             window_width = int(spectrum_window/datasamp)
-            #burst_bin = int(datanumspectra*loc_pulse/downsamp)
             burst_bin = int(nbins*loc_pulse/downsamp)
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
-            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec)) 
+            if bandpass_corr:
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
+                Dedisp_spec /= bandpass
+                del_percent = 0.10 # total
+                chans_del = np.ceil(len(Dedisp_spec)*del_percent/2.)
+                Dedisp_spec[-int(chans_del):] = 0
+                Dedisp_spec[:int(chans_del)] = 0
+            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec))
             sp_pgplot.ppgplot.pgsvp(0.7, 0.9, 0.44, 0.75)
             sp_pgplot.ppgplot.pgswin(np.min(Dedisp_spec), 1.05*np.max(Dedisp_spec), min_freq, max_freq)
             sp_pgplot.ppgplot.pgsch(0.8)
@@ -418,11 +439,18 @@ def plot(spdfile, singlepulsefiles=None, spec_width=1.5, loc_pulse=0.5, xwin=Fal
         if integrate_spec:
             spectrum_window = spec_width*pulse_width
             window_width = int(spectrum_window/datasamp)
-            #burst_bin = int(datanumspectra*loc_pulse/downsamp)
             burst_bin = int(nbins*loc_pulse/downsamp)
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
-            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec)) 
+            if bandpass_corr:
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
+                Dedisp_spec /= bandpass
+                del_percent = 0.10 # total
+                chans_del = np.ceil(len(Dedisp_spec)*del_percent/2.)
+                Dedisp_spec[-int(chans_del):] = 0
+                Dedisp_spec[:int(chans_del)] = 0
+            freqs = np.linspace(min_freq, max_freq, len(Dedisp_spec))
             sp_pgplot.ppgplot.pgsvp(0.70, 0.90, 0.05, 0.36)
             sp_pgplot.ppgplot.pgswin(np.min(Dedisp_spec), 1.05*np.max(Dedisp_spec), min_freq, max_freq)
             sp_pgplot.ppgplot.pgsch(0.8)
@@ -512,6 +540,10 @@ def main():
                       default=False, help="Show time series.(Default: Don't show time series)")
     parser.add_option("--show-sweep", action="store_true", dest="disp_pulse",
                       default=False, help="Show dispersed pulse.(Default: Don't show dispersed pulse)")
+    parser.add_option("--maskfn", dest="maskfn", type="string", help="Mask File to plot bandpass-corrected spectra",default='')
+    parser.add_option("--bandpass", action="store_true", dest="bandpass_corr", default=False,\
+                      help="Plot bandpass corrected spectra, need to supply a mask file with --maskfn argument") 
+    
     (options, args) = parser.parse_args()
    
     if len(args) == 0:
@@ -521,12 +553,12 @@ def main():
     if len(args) == 2:
         tar = tarfile.open(args[1], "r:gz")# read in the tarball
         filenames = tar.getnames()# get the filenames
-        plot(args[0], filenames, options.spec_width, options.loc_pulse, options.xwin, options.outfile, options.just_waterfall, \
-             options.integrate_spec, options.integrate_ts, options.disp_pulse, tar)# make the sp plots   
+        plot(args[0], filenames, options.maskfn, options.spec_width, options.loc_pulse, options.xwin, options.outfile, options.just_waterfall, \
+             options.integrate_spec, options.integrate_ts, options.disp_pulse, options.bandpass_corr, tar)# make the sp plots   
         tar.close()
     else:
-        plot(args[0], args[1:], options.spec_width, options.loc_pulse, options.xwin, options.outfile, options.just_waterfall, \
-             options.integrate_spec, options.integrate_ts, options.disp_pulse, tar = None)# make the sp plots   
+        plot(args[0], args[1:], options.maskfn, options.spec_width, options.loc_pulse, options.xwin, options.outfile, options.just_waterfall, \
+             options.integrate_spec, options.integrate_ts, options.disp_pulse, options.bandpass_corr, tar = None)# make the sp plots   
 
 if __name__ == '__main__':
     main() 
