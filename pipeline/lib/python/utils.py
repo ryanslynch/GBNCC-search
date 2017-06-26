@@ -36,12 +36,12 @@ def results_status(outdir, basenm):
     nreport     = len(glob.glob(os.path.join(outdir, "%s*.report"%basenm)))
     ndiagnostic = len(glob.glob(os.path.join(outdir, "%s*.diagnostics"%basenm)))
     naccels     = len(glob.glob(os.path.join(outdir, "%s*accelcands*"%basenm)))
-    #ngroup      = len(glob.glob(os.path.join(outdir, "groups.txt"%basenm)))
-    ngroup = 1
-    #ngroupplots = len(glob.glob(os.path.join(outdir, "grouped*png")))
-    ngroupplots = 1
+    ngroup      = len(glob.glob(os.path.join(outdir, "groups.txt")))
+    #ngroup = 1
+    ngroupplots = len(glob.glob(os.path.join(outdir, "grouped*png")))
+    #ngroupplots = 1
 
-    if (naccels != 2) or (ntgzs !=8) or (nrfifinds < 8) or (nreport != 1) or \
+    if (naccels != 2) or (ntgzs !=9) or (nrfifinds < 8) or (nreport != 1) or \
        (npfdplots == 0) or (nspplots < 6):
         return "f"
     elif (npfdplots != nratings) or (ndiagnostic != 1) or (ngroup != 1) or \
