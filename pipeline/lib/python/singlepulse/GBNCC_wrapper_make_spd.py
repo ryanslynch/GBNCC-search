@@ -81,7 +81,7 @@ def GBNCC_wrapper(txtfile, maskfile, fitsfilenm, path_sp_files):
     """
     files = spio.get_textfile(txtfile)
     min_rank = 3
-    groups = [i for i in range(6) if(i>=min_rank)][::-1]
+    groups = [i for i in range(7) if(i>=min_rank)][::-1]
     numcands=0 # counter for max number of candidates
     loop_must_break = False # dont break the loop unless num of cands >100.
     

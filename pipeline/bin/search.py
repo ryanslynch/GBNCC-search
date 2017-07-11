@@ -642,7 +642,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     diagnostics.write_diagnostics(job.basefilenm)
 
     # Move all the important stuff to the output directory
-    subprocess.call("mv *rfifind.[bimors]*  *.accelcands* *.tgz *.png *.ratings *.diagnostics groups.txt *spd* %s"%job.outputdir, shell=True)
+    subprocess.call("mv *rfifind.[bimors]*  *.accelcands* *.tgz *.png *.ratings *.diagnostics groups.txt *spd.rat %s"%job.outputdir, shell=True)
     
     # Make a file indicating that this beam needs to be viewed
     open("%s/tobeviewed"%job.outputdir, "w").close()
