@@ -219,6 +219,8 @@ def gen_arrays(dm, sp_files, tar, threshold):
     max_dm = _np.ceil(_np.max(dm)).astype('int')
     min_dm = _np.min(dm).astype('int')
     diff_dm = max_dm-min_dm
+    if diff_dm < 10: #To choose an appropriate DM range for rank 7 candidates with few single pulse events
+        diff_dm = 10
     ddm = min_dm-diff_dm
     hidm = max_dm+diff_dm
     if (ddm <= 0):
