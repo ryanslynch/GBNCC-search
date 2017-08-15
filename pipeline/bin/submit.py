@@ -8,16 +8,20 @@ checkpoints = []
 queue = PBSQuery.PBSQuery()
 
 print("Starting GBNCC job submitter...")
+
 while True:
+    print("Connecting to database")
     db = database.Database("observations")
     query = "SELECT ProcessingID,FileName FROM GBNCC WHERE "\
             "ProcessingStatus='i'"
+    print("Updating job states")
     db.execute(query)
     ret = db.fetchall()
     if len(ret) != 0:
-        for jobid,filenm in ret:
-            alljobs = queue.getjobs()
-            if alljobs is not None:
+        print("Getting all currently running jobs")
+        alljobs = queue.getjobs()
+        if alljobs is not None:
+            for jobid,filenm in ret:
                 if alljobs.has_key(str(jobid)):
                     if alljobs[str(jobid)]["job_state"][0] == "R":
                         nodenm = alljobs[str(jobid)]["exec_host"][0]
@@ -34,6 +38,7 @@ while True:
     db.close()
     
     filenms = glob.glob(os.path.join(config.datadir, "guppi*GBNCC*fits"))
+    print("Getting number of jobs in queue\n")
     nqueued = utils.getqueue(config.machine,queue)
 
     while nqueued<config.queuelim and (len(filenms)>0 or len(checkpoints)>0):
@@ -81,65 +86,57 @@ while True:
             print("ERROR: %s: %s"%(jobnm,msg))
         
         else:
+            print("Submitted %s with ID %s"%(jobnm,jobid))
             prestoversion = subprocess.Popen("cd %s ; git rev-parse HEAD 2> /dev/null"%prestodir,shell=True,stdout=subprocess.PIPE).stdout.readline().strip()
             jobid = jobid.strip()
-            print("Submitted %s with ID %s"%(jobnm,jobid))
             time.sleep(30)
+            ntries = 0
+            success = False
+            status = "f"
             alljobs = queue.getjobs()
-            if alljobs is not None:
-                while not alljobs.has_key(jobid):
-                    time.sleep(5)
-                if alljobs[jobid]["job_state"][0] == "Q":
-                    status = "i"
-                else:
-                    status = "p"
-                    nodenm = alljobs[jobid]["exec_host"][0]
-                    checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
-                    with open(checkpoint, "w") as f:
-                        f.write(nodenm+"\n")
-                        f.write("0 0\n")
-
-                ntries = 0
-                success = False
-                while not success and ntries < 2:
-                    if alljobs.has_key(jobid):
-                        success = True
-                        if alljobs[jobid]["job_state"][0] == "Q":
-                            status = "i"
-                        else:
-                            status = "p"
-                            nodenm = alljobs[jobid]["exec_host"][0]
-                            checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
-                            #with open(checkpoint, "w") as f:
-                            #    f.write(nodenm+"\n")
-                            #    f.write("0 0\n")
-                    elif ntries < 2:
+            while not success and ntries <= 2:
+                if alljobs is not None:
+                    if not alljobs.has_key(jobid):
+                        print("Waiting to find job")
+                        time.sleep(5)
                         ntries += 1
                         alljobs = queue.getjobs()
+                    elif alljobs[jobid]["job_state"][0] == "Q":
+                        success = True
+                        status = "i"
                     else:
-                        status = "f"
-                date = datetime.datetime.now()
-                query = "UPDATE GBNCC SET ProcessingStatus='{status}',"\
-                        "ProcessingID='{jobid}',ProcessingSite='{site}',"\
-                        "ProcessingAttempts=ProcessingAttempts+1,"\
-                        "ProcessingDate='{date}',"\
-                        "PipelineVersion='{version}', "\
-                        "PRESTOVersion='{prestoversion}' "\
-                        "WHERE FileName='{filenm}'".format(status=status,
-                                                           jobid=jobid,
-                                                           site=config.machine,
-                                                           date=date.isoformat(),
-                                                           version=config.version,
-                                                           prestoversion=prestoversion,
-                                                           filenm=os.path.basename(filenm))
+                        success = True
+                        status = "p"
+                        nodenm = alljobs[jobid]["exec_host"][0]
+                        checkpoint = os.path.join(config.jobsdir, jobnm+".checkpoint")
+                        with open(checkpoint, "w") as f:
+                            f.write(nodenm+"\n")
+                            f.write("0 0\n")
+            print("Marked job with status '%s'"%status)
+            date = datetime.datetime.now()
+            query = "UPDATE GBNCC SET ProcessingStatus='{status}',"\
+                "ProcessingID='{jobid}',ProcessingSite='{site}',"\
+                "ProcessingAttempts=ProcessingAttempts+1,"\
+                "ProcessingDate='{date}',"\
+                "PipelineVersion='{version}', "\
+                "PRESTOVersion='{prestoversion}' "\
+                "WHERE FileName='{filenm}'".format(status=status,
+                                                   jobid=jobid,
+                                                   site=config.machine,
+                                                   date=date.isoformat(),
+                                                   version=config.version,
+                                                   prestoversion=prestoversion,
+                                                   filenm=os.path.basename(filenm))
                 
-                db = database.Database("observations")
-                db.execute(query)
-                db.commit()
-                db.close()
+            db = database.Database("observations")
+            db.execute(query)
+            db.commit()
+            db.close()
         nqueued = utils.getqueue(config.machine,queue)
             
     else:
-        print("Nothing to submit.  Sleeping...")
+        if nqueued>=config.queuelim:
+            print("Queue full.  Sleeping...\n")
+        elif len(filenms) == 0:
+            print("Nothing to submit.  Sleeping...\n")
         time.sleep(config.sleeptime)
-        
