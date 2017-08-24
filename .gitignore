@@ -10,4 +10,6 @@ submit_output
 supervisord.conf
 supervisord.log
 gbncc_local.bash
+fort.*
+request_permissions_2.txt
 *~

@@ -1,0 +1,56 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module NE2001 ! in 
+    interface  ! in :NE2001
+        subroutine dmdsm(l,b,ndir,dmpsr,dist,limit,sm,smtau,smtheta,smiso) ! in :NE2001:dmdsm.NE2001.f
+            real intent(in) :: l
+            real intent(in) :: b
+            integer intent(in) :: ndir
+            real intent(in,out) :: dmpsr
+            real intent(in,out) :: dist
+            character*1 intent(out) :: limit
+            real intent(out) :: sm
+            real intent(out) :: smtau
+            real intent(out) :: smtheta
+            real intent(out) :: smiso
+            real dimension(6) :: armpaths
+            real dimension(6) :: armdistances
+            real :: n1h1
+            real :: h1
+            real :: a1
+            real :: f1
+            real :: n2
+            real :: h2
+            real :: a2
+            real :: f2
+            real :: na
+            real :: ha
+            real :: wa
+            real :: aa
+            real :: fa
+            real dimension(5) :: harm
+            real dimension(5) :: narm
+            real dimension(5) :: warm
+            real dimension(5) :: farm
+            integer :: wg1
+            integer :: wg2
+            integer :: wga
+            integer :: wggc
+            integer :: wglism
+            integer :: wgcn
+            integer :: wgvn
+            real :: dx0
+            real :: dy0
+            real :: dz0
+            common /armpathlengths/ armpaths,armdistances
+            common /galparams/ n1h1,h1,a1,f1,n2,h2,a2,f2,na,ha,wa,aa,fa
+            common /armfactors/ harm,narm,warm,farm
+            common /modelflags/ wg1,wg2,wga,wggc,wglism,wgcn,wgvn
+            common /dxyz/ dx0,dy0,dz0
+        end subroutine dmdsm
+    end interface 
+end python module NE2001
+
+! This file was auto-generated with f2py (version:2).
+! See http://cens.ioc.ee/projects/f2py2e/
