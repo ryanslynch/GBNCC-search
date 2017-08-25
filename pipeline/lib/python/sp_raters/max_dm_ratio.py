@@ -6,9 +6,6 @@ from scipy.spatial import cKDTree
 import base
 from sp_rating_classes import spd
 
-# Initialise constants
-NE2001_FILENM = os.path.join(os.path.split(__file__)[0], "../NE2001_grid.npz")
-
 class MaxDMRatioRater(base.BaseRater):
     short_name = "max_dm_ratio"
     long_name = "Maximum DM Ratio Rating"
@@ -29,12 +26,11 @@ class MaxDMRatioRater(base.BaseRater):
             Outputs:
                 None
         """
-
-        dat = np.load(NE2001_FILENM)
-        self.lb_pairs = dat['lb_pairs']
-        self.max_DM = dat['max_DM']
-        self.search_tree = cKDTree(self.lb_pairs)
-
+          
+        self.cl = 0.  
+        self.cb = 0. 
+        self.max_DM = 1595.88 #pc/cc
+        
     def _compute_rating(self, cand):
         """Return a rating for the candidate. The rating value is a ratio
             of the candidate DM to the max DM along the line of sight in the
@@ -46,17 +42,24 @@ class MaxDMRatioRater(base.BaseRater):
             Output:
                 value: The rating value.
         """
+
         dm = cand.info['dm']
         ra = cand.info['raj_deg']
         dec = cand.info['decj_deg']
 
         pos = SkyCoord(ra=ra, dec=dec, unit='degree').galactic
-        cl = pos.l.degree
-        cb = pos.b.degree
+        cl_cand = pos.l.radian
+        cb_cand = pos.b.radian
 
-        grid_distance, index = \
-          self.search_tree.query([cl, cb], distance_upper_bound=1)
+        #Call to NE2001 only if max DM has not been computed for that position previously
+        if self.cl != cl_cand or self.cb != cb_cand: 
+            import NE2001
+            dist = 55. #Dist > Dist to LMC 
+            DM = 0. #Dummy Value
+            self.max_DM = NE2001.dmdsm(cl_cand,cb_cand,-1,DM,dist)[0]
+            self.cl = cl_cand
+            self.cb = cb_cand
 
-        return dm / self.max_DM[index-1]
+        return dm / self.max_DM
 
 Rater = MaxDMRatioRater
