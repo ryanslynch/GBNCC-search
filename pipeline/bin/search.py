@@ -5,6 +5,7 @@ import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
 import argparse, numpy, presto, sifting, psr_utils
 import ratings, diagnostics, config
 import singlepulse.GBNCC_wrapper_make_spd as GBNCC_wrapper_make_spd
+import ffa_final,get_ffa_folding_command
 try:
     import pyfits
 except ImportError:
@@ -23,8 +24,10 @@ singlepulse_threshold = 5.0  # threshold SNR for candidate determination
 singlepulse_plot_SNR  = 5.5  # threshold SNR for plotting
 singlepulse_maxwidth  = 0.1  # maximum pulse width in seconds
 to_prepfold_sigma     = 6.0  # incoherent sum significance to fold candidates
+to_prepfold_ffa_snr   = 6.0  # FFA SNR to fold candidates
 max_lo_cands_to_fold  = 20   # maximum number of lo-accel candidates to fold
 max_hi_cands_to_fold  = 10   # maximum number of hi-accel candidates to fold
+max_ffa_cands_to_fold = 10   # maximum number of FFA candidates to fold
 numhits_to_fold       = 2    # number of DMs with a detection needed to fold
 low_DM_cutoff         = 1.0  # lowest DM to consider as a "real" pulsar
 lo_accel_numharm      = 32   # max harmonics
@@ -45,6 +48,8 @@ sifting.short_period    = 0.0005 # shortest period candidates to consider (s)
 sifting.long_period     = 15.0   # longest period candidates to consider (s)
 sifting.harm_pow_cutoff = 8.0    # power required in at least one harmonic
 #-------------------------------------------------------------------
+
+
 
 def get_baryv(ra, dec, mjd, T, obs="GB"):
     """
@@ -184,8 +189,10 @@ class obs_info:
         self.FFT_time = 0.0
         self.lo_accelsearch_time = 0.0
         self.hi_accelsearch_time = 0.0
+        self.ffa_time = 0.0
         self.singlepulse_time = 0.0
         self.sifting_time = 0.0
+        self.ffa_sifting_time = 0.0
         self.folding_time = 0.0
         self.total_time = 0.0
         # Inialize some candidate counters
@@ -215,8 +222,12 @@ class obs_info:
                           (self.lo_accelsearch_time, self.lo_accelsearch_time/self.total_time*100.0))
         report_file.write("   hi-accelsearch time = %7.1f sec (%5.2f%%)\n"%\
                           (self.hi_accelsearch_time, self.hi_accelsearch_time/self.total_time*100.0))
+        report_file.write("              ffa time = %7.1f sec (%5.2f%%)\n"%\
+                          (self.ffa_time, self.ffa_time/self.total_time*100.0))
         report_file.write("          sifting time = %7.1f sec (%5.2f%%)\n"%\
                           (self.sifting_time, self.sifting_time/self.total_time*100.0))
+        report_file.write("      ffa sifting time = %7.1f sec (%5.2f%%)\n"%\
+                          (self.ffa_sifting_time, self.ffa_sifting_time/self.total_time*100.0))
         report_file.write("          folding time = %7.1f sec (%5.2f%%)\n"%\
                           (self.folding_time, self.folding_time/self.total_time*100.0))
         report_file.write("---------------------------------------------------------\n")
@@ -279,6 +290,9 @@ def remove_crosslist_duplicate_candidates(candlist1,candlist2):
     candlist2.sort(sifting.cmp_sigma)
     return candlist1,candlist2
 
+def sift_ffa(job):
+    ffa_cands = ffa_final.final_sifting_ffa(job.basefilenm,glob.glob(job.basefilenm+"*DM*_cands.ffa"))
+    return ffa_cands
 
 def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     # Change to the specified working directory
@@ -438,6 +452,14 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                     shutil.move(basenm+"_ACCEL_%d"%hi_accel_zmax, workdir)
                 except: pass
 
+                # Do the FFA search
+                cmd = "ffa.py %s"%datnm
+                job.ffa_time += timed_execute(cmd)
+                try:  # This prevents errors if there are no cand files to copy
+                    shutil.move(basenm+"_cands.ffa",workdir)
+                except:
+                    pass
+
                 # Move the .inf files
                 try:
                     shutil.move(infnm, workdir)
@@ -548,6 +570,11 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
 
     job.sifting_time = time.time() - job.sifting_time
 
+    # FFA sifting
+    job.ffa_sifting_time = time.time()
+    ffa_cands = sift_ffa(job)
+    job.ffa_sifting_time = time.time() - job.ffa_sifting_time
+
     # Fold the best candidates
 
     cands_folded = 0
@@ -565,6 +592,14 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
             job.folding_time += timed_execute(get_folding_command(cand, job, ddplans, maskfilenm))
             cands_folded += 1
 
+    cands_folded = 0
+    for cand in ffa_cands.cands:
+        if cands_folded == max_ffa_cands_to_fold:
+            break
+        elif cand.snr > to_prepfold_ffa_snr:
+            job.fold_time += timed_execute(get_ffa_folding_command(cand,obs,maskfilenm))
+            cands_folded += 1
+            
     # Rate the candidates
     pfdfiles = glob.glob("*.pfd")
     for pfdfile in pfdfiles:
@@ -598,6 +633,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                     "_ACCEL_%d.tgz"%hi_accel_zmax,
                     "_ACCEL_%d.cand.tgz"%lo_accel_zmax,
                     "_ACCEL_%d.cand.tgz"%hi_accel_zmax,
+                    "_cands_ffa.tgz",
                     "_singlepulse.tgz",
                     "_inf.tgz",
                     "_pfd.tgz",
@@ -607,6 +643,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                  "*_ACCEL_%d"%hi_accel_zmax,
                  "*_ACCEL_%d.cand"%lo_accel_zmax,
                  "*_ACCEL_%d.cand"%hi_accel_zmax,
+                 "*_cands.ffa",
                  "*.singlepulse",
                  "*_DM[0-9]*.inf",
                  "*.pfd",
