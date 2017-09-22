@@ -634,7 +634,6 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                     "_ACCEL_%d.tgz"%hi_accel_zmax,
                     "_ACCEL_%d.cand.tgz"%lo_accel_zmax,
                     "_ACCEL_%d.cand.tgz"%hi_accel_zmax,
-                    "_cands_ffa.tgz",
                     "_singlepulse.tgz",
                     "_inf.tgz",
                     "_pfd.tgz",
@@ -644,7 +643,6 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                  "*_ACCEL_%d"%hi_accel_zmax,
                  "*_ACCEL_%d.cand"%lo_accel_zmax,
                  "*_ACCEL_%d.cand"%hi_accel_zmax,
-                 "*_cands.ffa",
                  "*.singlepulse",
                  "*_DM[0-9]*.inf",
                  "*.pfd",
@@ -680,7 +678,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
     diagnostics.write_diagnostics(job.basefilenm)
 
     # Move all the important stuff to the output directory
-    subprocess.call("mv *rfifind.[bimors]*  *.accelcands* *.tgz *.png *.ratings *.diagnostics groups.txt *spd.rat %s"%job.outputdir, shell=True)
+    subprocess.call("mv *rfifind.[bimors]*  *.accelcands* *.ffacands *.tgz *.png *.ratings *.diagnostics groups.txt *spd.rat *.report *.summary %s"%job.outputdir, shell=True)
     
     # Make a file indicating that this beam needs to be viewed
     open("%s/tobeviewed"%job.outputdir, "w").close()
