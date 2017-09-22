@@ -5,7 +5,8 @@ import os, sys, shutil, stat, glob, subprocess, time, socket, struct, tarfile
 import argparse, numpy, presto, sifting, psr_utils
 import ratings, diagnostics, config
 import singlepulse.GBNCC_wrapper_make_spd as GBNCC_wrapper_make_spd
-import ffa_final,get_ffa_folding_command
+import ffa_final
+from get_ffa_folding_command import get_ffa_folding_command
 try:
     import pyfits
 except ImportError:
