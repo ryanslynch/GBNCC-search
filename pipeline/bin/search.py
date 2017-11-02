@@ -291,8 +291,8 @@ def remove_crosslist_duplicate_candidates(candlist1,candlist2):
     candlist2.sort(sifting.cmp_sigma)
     return candlist1,candlist2
 
-def sift_ffa(job):
-    ffa_cands = ffa_final.final_sifting_ffa(job.basefilenm,glob.glob(job.basefilenm+"*DM*_cands.ffa"))
+def sift_ffa(job,zaplist):
+    ffa_cands = ffa_final.final_sifting_ffa(job.basefilenm,glob.glob(job.basefilenm+"*DM*_cands.ffa"),job.basefilenm+".ffacands",zaplist)
     return ffa_cands
 
 def main(fits_filenm, workdir, jobid, zaplist, ddplans):
@@ -454,12 +454,15 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
                 except: pass
 
                 # Do the FFA search
-                cmd = "ffa.py %s"%datnm
-                job.ffa_time += timed_execute(cmd)
-                try:  # This prevents errors if there are no cand files to copy
-                    shutil.move(basenm+"_cands.ffa",workdir)
-                except:
-                    pass
+                if (not float(dmstr)%0.5) and (float(dmstr) <= 1500.0):
+                    cmd = "ffa.py %s"%datnm
+                    job.ffa_time += timed_execute(cmd)
+                    try:  # This prevents errors if there are no cand files
+                        shutil.move(basenm+"_cands.ffa",workdir)
+                    except:
+                        pass
+                else:
+                    print "Skipping FFA search for DM=%s pc/cc"%dmstr
 
                 # Move the .inf files
                 try:
@@ -573,7 +576,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
 
     # FFA sifting
     job.ffa_sifting_time = time.time()
-    ffa_cands = sift_ffa(job)
+    ffa_cands = sift_ffa(job,zaplist)
     job.ffa_sifting_time = time.time() - job.ffa_sifting_time
 
     # Fold the best candidates
@@ -598,7 +601,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
         if cands_folded == max_ffa_cands_to_fold:
             break
         elif cand.snr > to_prepfold_ffa_snr:
-            job.fold_time += timed_execute(get_ffa_folding_command(cand,obs,maskfilenm))
+            job.folding_time += timed_execute(get_ffa_folding_command(cand,job,ddplans,maskfilenm))
             cands_folded += 1
             
     # Rate the candidates

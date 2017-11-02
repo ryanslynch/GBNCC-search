@@ -11,11 +11,13 @@ def get_ffa_folding_command(cand, obs, ddplans, maskfilenm):
     # Note:  the following calculations should probably only be done once,
     #        but in general, these calculation are effectively instantaneous
     #        compared to the folding itself
-    hidms = [x.lodm for x in obs.ddplans[1:]] + [2000]
-    dfacts = [x.downsamp for x in obs.ddplans]
-    for hidm, dfact in zip(hidms, dfacts):
+    hidms = [x.lodm for x in ddplans[1:]] + [2000]
+    dfacts = [x.downsamp for x in ddplans]
+    numsubs = [x.numsub for x in ddplans]
+    for hidm, dfact,numsub in zip(hidms, dfacts, numsubs):
         if cand.DM < hidm:
             downsamp = dfact
+            nsub = numsub
             break
     if downsamp==1:
         fitsfile = obs.fits_filenm
@@ -45,7 +47,7 @@ def get_ffa_folding_command(cand, obs, ddplans, maskfilenm):
         otheropts = "-nosearch -slow"
 
     return "prepfold -noxwin -mask %s -dm %.2f -p %f -o %s " \
-                "-nsub %d -npart %d %s -n %d %s %s" % \
-           (maskfilenm,cand.DM, cand.p, outfilenm, nsub,
-            npart, otheropts, N, mask, foldfiles)
+                "-nsub %d -npart %d %s -n %d %s" % \
+           (maskfilenm,cand.DM, cand.p, outfilenm,
+            nsub, npart, otheropts, N, fitsfile)
 
