@@ -145,7 +145,7 @@ def plot(spdfile, singlepulsefiles=None, maskfn = None, spec_width=1.5, loc_puls
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
             if bandpass_corr:
-                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg
                 bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
                 Dedisp_spec /= bandpass
                 del_percent = 0.10 #remove total 10% of band
@@ -204,7 +204,7 @@ def plot(spdfile, singlepulsefiles=None, maskfn = None, spec_width=1.5, loc_puls
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
             if bandpass_corr:
-                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg
                 bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
                 Dedisp_spec /= bandpass
                 del_percent = 0.10 # total
@@ -384,7 +384,7 @@ def plot(spdfile, singlepulsefiles=None, maskfn = None, spec_width=1.5, loc_puls
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
             if bandpass_corr:
-                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg
                 bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
                 Dedisp_spec /= bandpass
                 del_percent = 0.10 # total
@@ -443,7 +443,7 @@ def plot(spdfile, singlepulsefiles=None, maskfn = None, spec_width=1.5, loc_puls
             on_spec = array[..., burst_bin-window_width:burst_bin+window_width]
             Dedisp_spec = on_spec.sum(axis=1)
             if bandpass_corr:
-                bandpass = rfifind.rfifind(maskfn).bandpass_avg[::-1]
+                bandpass = rfifind.rfifind(maskfn).bandpass_avg
                 bandpass = bandpass.reshape(-1, len(bandpass)/len(Dedisp_spec)).mean(axis=1)
                 Dedisp_spec /= bandpass
                 del_percent = 0.10 # total
