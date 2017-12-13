@@ -8,8 +8,8 @@ from singlepulse.read_spd import ddm_response
 
 # Initialise constants
 KNOWNPSR_FILENM = os.path.join(os.path.split(__file__)[0], "../knownpulsars.csv")
-BEAM_FWHM_ARCMIN = 3.35 
-MOCK_BAND = [1214., 1537.]
+BEAM_FWHM_ARCMIN = 36. 
+MOCK_BAND = [300., 400.]
 
 def gaussian_response(sep, sigma):
     return np.exp(-0.5*pow(sep/sigma, 2))
