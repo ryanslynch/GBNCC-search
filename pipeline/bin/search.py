@@ -140,7 +140,7 @@ def get_folding_command(cand, obs, ddplans, maskfilenm):
     else:
         Mp, Mdm, N = 1, 1, 200
         otheropts = "-npart 30 -nodmsearch -nopdsearch -pstep 1 -pdstep 2 -dmstep 1"
-    return "prepfold -noxwin -nsub 128 -accelcand %d -accelfile %s.cand -dm %.2f -o %s %s -n %d -npfact %d -ndmfact %d -mask %s %s" % \
+    return "prepfold -noxwin -ignorechan 2456:3277 -nsub 128 -accelcand %d -accelfile %s.cand -dm %.2f -o %s %s -n %d -npfact %d -ndmfact %d -mask %s %s" % \
            (cand.candnum, cand.filename, cand.DM, outfilenm,
             otheropts, N, Mp, Mdm, maskfilenm, fitsfile)
 
@@ -394,7 +394,7 @@ def main(fits_filenm, workdir, jobid, zaplist, ddplans):
             subbasenm = "%s_DM%s"%(job.basefilenm, ddplan.subdmlist[passnum])
 
             # Now de-disperse 
-            cmd = "prepsubband -mask %s -lodm %.2f -dmstep %.2f -nsub %d -numdms %d -numout %d -o %s/%s %s"%\
+            cmd = "prepsubband -ignorechan 2456:3277 -mask %s -lodm %.2f -dmstep %.2f -nsub %d -numdms %d -numout %d -o %s/%s %s"%\
                   (maskfilenm, ddplan.lodm+passnum*ddplan.sub_dmstep, ddplan.dmstep, ddplan.numsub,
                    ddplan.dmsperpass, job.N/ddplan.downsamp,
                    tmpdir, job.basefilenm, fits_filenm)
