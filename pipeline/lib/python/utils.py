@@ -1,11 +1,10 @@
-import os, glob, config, psr_utils#, PBSQuery
+import os, glob, config, psr_utils
 from subprocess import Popen, PIPE
 import numpy as np
 import matplotlib.pyplot as plt
 
 def getqueue(machine,queue):
-    #queue = PBSQuery.PBSQuery()
-    if machine == "guillimin":
+    if machine == "guillimin" or machine == "nimrod":
         alljobs = queue.getjobs()
         if alljobs is not None:
             myjobs    = [job for job in alljobs.itervalues() \
@@ -18,7 +17,7 @@ def getqueue(machine,queue):
     return nqueued
 
 def subjob(machine, subfilenm, options=""):
-    if machine == "guillimin":
+    if machine == "guillimin" or machine == "nimrod":
         cmd = "qsub " + options + " " + subfilenm
         process = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
         jobid,err = process.communicate()

@@ -16,7 +16,10 @@ def download(outdir):
      if ret is not None:
           ID      = ret[0]
           filenm  = os.path.join(*ret[1:])
-          cmd     = "rsync astro.cv.nrao.edu:%s %s"%(filenm,outdir)
+          if config.machine == "nimrod":
+               cmd = "cp %s %s"%(filenm,outdir)
+          else:
+               cmd = "rsync astro.cv.nrao.edu:%s %s"%(filenm,outdir)
           
           query   = "UPDATE GBNCC SET ProcessingStatus='d',"\
                     "ProcessingSite='%s' WHERE ID=%i"%(config.machine,ID)

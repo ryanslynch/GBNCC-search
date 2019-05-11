@@ -11,3 +11,4 @@ supervisord.conf
 supervisord.log
 gbncc_local.bash
 *~
+*pyc
