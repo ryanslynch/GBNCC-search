@@ -27,6 +27,8 @@ baseworkdir = "/localscratch"
 basetmpdir  = "/localscratch"                                                 
 # Directory where pipeline scripts are stored                                 
 pipelinedir = os.path.join(topdir, "pipeline")                                
+# Directory where third party software is found
+softwaredir = "/gs/project/bgf-180-ad/PALFA4/software"
 # Directory where raw data files are stored before being processed            
 datadir     = "/gs/scratch/rlynch/GBNCC"                                      
 # Directory where job submission files are stored                             
@@ -104,7 +106,7 @@ queue
 #PBS -V
 #PBS -M {email}
 #PBS -N {jobnm}
-#PBS -l nodes=nimrod:ppn=1+1:new:ppn=1
+#PBS -l nodes=1:compute:ppn=1
 #PBS -l walltime={walltimelim}
 
 mkdir -p {workdir}
