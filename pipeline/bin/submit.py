@@ -37,7 +37,7 @@ while True:
                         pass
     db.close()
     
-    filenms = glob.glob(os.path.join(config.datadir, "guppi*GBNCC*fits"))
+    filenms = np.concatenate(glob.glob(os.path.join(config.datadir, "*GBNCC*fits"))
     print("Getting number of jobs in queue\n")
     nqueued = utils.getqueue(config.machine,queue)
 

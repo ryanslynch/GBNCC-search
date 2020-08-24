@@ -76,7 +76,7 @@ def get_fold_diagnostics(basename, lo_z, hi_z, folding_threshold):
     lines           = f.readlines()
     f.close()
     for line in lines:
-        if line.startswith("guppi"):
+        if line.startswith("guppi") or line.startswith("vegas"):
             sline      = line.strip().split()
             candnum    = int(sline[0].split(":")[1])
             DM         = sline[1]
@@ -93,7 +93,7 @@ def get_fold_diagnostics(basename, lo_z, hi_z, folding_threshold):
     lines           = f.readlines()
     f.close()
     for line in lines:
-        if line.startswith("guppi"):
+        if line.startswith("guppi") or line.startswith("vegas"):
             sline      = line.strip().split()
             candnum    = int(sline[0].split(":")[1])
             DM         = sline[1]
